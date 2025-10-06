@@ -1,29 +1,7 @@
 
-#include <iostream>
-#include <vector>
-#include <string>
-#include <map>
-using namespace std;
+#include "warship.h"
 
-
-/* кораблики урааа*/
-class Ship
-{
-public:
-    explicit Ship(int, int, int, bool);
-
-    const vector<int>& get_pos() const;
-    int get_size() const;
-
-    bool attack(vector<int>);
-    bool attack(int, int);
-
-private:
-    vector<int> coordinates;
-    int size;
-    bool hor; // 1 - vertical; 0 - horizontal
-};
-
+/* кораблики урааа */
 Ship::Ship(int x, int y, int size, bool hor):
 coordinates({x, y}), size(size), hor(hor)
 {}
@@ -44,29 +22,15 @@ bool Ship::attack(vector<int> pos)
 bool Ship::attack(int x, int y)
 { return attack(vector<int>{x, y}); }
 
+ostream& operator<<(ostream& out, const Ship& other)
+{
+    out << other.coordinates[0] << ' '\
+        << other.coordinates[1] << ' ' << other.get_size(); 
+    return out;
+}
+
 
 /* по полям, по полям... */
-class Field
-{
-friend ostream& operator<<(ostream&, const Field&);
-
-public:
-    explicit Field();
-    explicit Field(int);
-
-    int get_size() const;
-    const vector<vector<int>>& get_pos() const;
-
-    void add_ship(int, int, int, bool);
-    bool attack(vector<int>);
-    bool attack(int, int);
-    
-private:
-    int size;
-    vector<vector<int>> coordinates;
-    vector<Ship> ships;
-};
-
 Field::Field(): Field(10)
 {}
 
@@ -80,43 +44,91 @@ const vector<vector<int>>& Field::get_pos() const
 { return coordinates; }
 
 void Field::add_ship(int x, int y, int size, bool hor)
-{ ships.push_back(Ship(x, y, size, hor)); }
+{ add_ship(Ship(x, y, size, hor)); }
 
-bool Field::attack(vector<int> pos)
+void Field::add_ship(Ship other)
+{ ships.push_back(other); }
+
+const Ship& Field::get_back() const
+{ return ships[ships.size()-1]; }
+
+bool Field::attack(vector<int> pos) const
 {
     int flag = 0;
     for (auto ship: ships)
     { if (ship.attack(pos)) { flag++; } }
-    coordinates.push_back(vector<int>{pos[0], pos[1], flag});
+    //coordinates.push_back(vector<int>{pos[0], pos[1], flag});
     return flag;
 }
 
-bool Field::attack(int x, int y)
+bool Field::attack(int x, int y) const
 { return attack(vector<int> {x, y}); }
+
+// ostream& operator<<(ostream& out, const Field& other)
+// {
+//     for (int i = 0; i < other.get_size(); ++i)
+//     {
+//         for (int j = 0; j < other.get_size(); ++j)
+//         { out << ((other.attack(j, i)) ? 1 : 0) << ' '; }
+//     }
+//     return out;
+// }
 
 
 /* на войне как на войне, а на войне как на войне */
-class Warship
+Warship::Warship(): Warship(0, 10)
+{}
+
+Warship::Warship(int n): Warship(0, n)
+{}
+
+Warship::Warship(bool online, int size):
+online(online), size(size), good_field(size)
+{
+    if (size<3) throw TooSmallFieldError{size};
+    if (online) 
+    {}
+    
+    create_field(good_field);
+    if (!online) create_field(bad_field);
+}
+
+Field& Warship::create_field(Field& other)
+{
+    vector<int> templ_ship {4, 3, 3, 2, 2, 2, 1, 1, 1, 1};
+    vector<Ship> fuck
+    {
+        Ship{1, 1, 1, 1},
+        Ship{1, 1, 1, 1},
+        Ship{1, 1, 1, 1},
+        Ship{1, 1, 1, 1},
+        Ship{1, 1, 1, 1},
+        Ship{1, 1, 1, 1},
+        Ship{1, 1, 1, 1},
+        Ship{1, 1, 1, 1},
+        Ship{1, 1, 1, 1},
+        Ship{3, 6, 5, 1},
+    };
+    for (auto templ: fuck)
+    { other.add_ship(templ); }
+    // for (auto templ: templ_ship)
+    // {
+    //     int x, y, hor;
+    //     cout << "Enter ship " << templ << ": ";
+    //     cin >> x >> y >> hor;
+    //     other.add_ship(x, y, templ, hor);
+    // }   
+    return other;
+}
+
+
+class Warship::TooSmallFieldError
 {
 public:
-    Warship();
-    explicit Warship(int);
+    TooSmallFieldError(int n): size(n) {}
 
-    class TooSmallFieldError;
-
-    // for tests
-    // map<string, int>& show_ships()
-    // { return ships; }
-    // vector<vector<int>>& show_field()
-    // { return field; }
-
+    string get_Message() const
+    { return "A field size of " + to_string(size) + " is too small"; }
 private:
-    void create_field();
-
-    Field good_field; // ну очевидно, свое поле, родное
-    Field bad_field;  // и поле врага, вонючее
-
-    bool online; // будут режимы игры сингл и по сети
-    
+    int size;
 };
-
