@@ -1,13 +1,14 @@
 
 #include "tunnel.h"
+#include "alg.cpp"
 using namespace std;
 
+Tunnel::Tunnel()
+{}
+
 Tunnel::Tunnel(unsigned port_):
-host(1)
-{ 
-    server.jackhost_act(port_); 
-    server.wait_jack();
-}
+Tunnel("127.0.0.1", port_)
+{}
 
 Tunnel::Tunnel(string host_, unsigned port_):
 host(0)
@@ -23,40 +24,19 @@ host(0)
     }
 }
 
-Tunnel::~Tunnel()
-{
-    client.~jack();
-    server.~jackhost();
+void Tunnel::set(unsigned port_)
+{ set("127.0.0.1", port_); }
+
+void Tunnel::set(string host_, unsigned port_)
+{ 
+    this->~Tunnel();
+    new (this) Tunnel(host_, port_);
 }
 
-bool Tunnel::check()
-{
-    try
-    { 
-        if (!host) 
-        {
-            msg = "1";
-            client << msg; 
-            client >> msg;
-            
-            if (msg == "1") 
-            return 1;
-        }
-        else 
-        {
-            server >> msg;
-            if (msg == "1")
-            {
-                server << msg;
-                return 1;
-            }
-        }
-    }
-    catch(const std::exception& e)
-    { cerr << e.what() << endl; }
-
-    return 0;
-}
+bool Tunnel::check() // чмо
+/* ты должна была бороться со злом, 
+   а не примкнуть к нему */
+{}
 
 bool Tunnel::send(string input)
 { 
@@ -92,3 +72,123 @@ string Tunnel::recieve()
 
 bool Tunnel::get_host() const
 { return host; }
+
+string Tunnel::get_ip() const
+{ 
+    if (host) 
+    { return server.get_ip(); }
+    else 
+    { return "";}
+}
+
+string Tunnel::get_invite() const
+{ 
+    if (host)
+    { return server.get_invite(); }
+    else 
+    { return "";}
+}
+
+string Tunnel::invite_to_ip(const string& data)
+{
+    if (host)
+    { return ""; }
+    else
+    { return client.invite_to_ip(data); }
+}
+
+
+sTunnel::sTunnel()
+{}
+
+sTunnel::sTunnel(unsigned port_):
+Tunnel("127.0.0.1", port_)
+{}
+
+sTunnel::sTunnel(string host_, unsigned port_):
+Tunnel(host_, port_)
+{}
+
+string sTunnel::hello(string name)
+{
+    names[0] = name;
+    if (host)
+    { send(name); }
+    names[1] = recieve();
+    if (!host)
+    { send(name); }
+    return names[1];
+}
+
+bool sTunnel::ready()
+{ 
+    if (host) 
+    { 
+        send("READY"); 
+        return (recieve() == "READY");
+    } else {
+        if (recieve() == "READY")
+        { return send("READY"); }
+        else
+        { return 0; }
+    }
+}
+
+void sTunnel::bue()
+{ send("BYE"); }
+
+bool sTunnel::restart()
+{
+    send("RESTART");
+    string res = recieve();
+    if (res != "ACCEPT" && res != "DECLINE")
+    { throw runtime_error("sTunnel::restart() - unknown recieve()"); }
+
+    return (res == "ACCEPT");
+}
+
+void sTunnel::accept()
+{ send("ACCEPT"); }
+
+void sTunnel::decline()
+{ send("DECLINE"); }
+
+bool sTunnel::start()
+{
+    if (host)
+    { return send("START"); }
+    else
+    { return (recieve() == "START"); }
+
+    throw runtime_error("sTunnel::start() - smth wrong with host");
+}
+
+void sTunnel::shot(const Point& pos)
+{ send(string("SHOT ")+pos.to_string()); }
+
+Point sTunnel::shot()
+{
+    vector<string> ss = split(recieve(), ' ');
+    if (ss[0] != "SHOT")
+    { throw runtime_error("sTunnel::shot() - its not SHOT"); }
+
+    return Point(ss[1]);
+}
+
+void sTunnel::result(const Point& pos, unsigned res)
+{ send(string("RESULT ")+pos.to_string()+string(" ")+to_string(res)); }
+
+bool sTunnel::result()
+{
+    vector<string> ss = split(recieve(), ' ');
+    if (ss[0] != "RESULT")
+    { throw runtime_error("sTunnel::result() - its not RESULT"); }
+
+    return sti(ss[2]);
+}
+
+string sTunnel::get_shot() const
+{ return step; }
+
+string sTunnel::get_name() const
+{ return names[1]; }
