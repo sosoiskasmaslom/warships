@@ -1,88 +1,161 @@
 
+#pragma once
 #include <iostream>
-#include <vector>
 #include <string>
-#include <map>
-using namespace std;
+#include <vector>
+#include "jack.h"
+#include "tunnel.h"
+#include "point.h"
 
+// unsigned sti(std::string);
+// std::string to_hex(unsigned);
+
+// класс кораблей
+// будет описывать здоровье, местоположение и размеры кораблся
+// так же на его совести попадание в корабль 
+// и насколько он живой (ну хп кароч)
 class Ship
 {
-friend ostream& operator<<(ostream&, const Ship&);
-
 public:
-    // х у размер и наскок вертикален
-    explicit Ship(int, int, int, bool);
+    // тут без векторов и наверн основной метод создания
+    // но я добавлю чтоб коорды через вектор задавались
+    // и метод чтоб можно было вектор прост закинуть
+    // а так это длина(по модулю), х, у и вертикальность
+    explicit Ship(unsigned, unsigned, unsigned, bool);
+    explicit Ship(std::vector<unsigned>); 
+    explicit Ship(unsigned, Point, bool);
 
-    const vector<int>& get_pos() const;
-    const vector<int>& get_damage() const;
-    vector<int>& get_damage();
+    // метод для проверки существует ли корабль в данной точке
+    // \param unsigned y
+    // \param unsigned х
+    bool attack(unsigned, unsigned) const;
+    // метод для проверки существует ли корабль в данной точке
+    // \param Point
+    bool attack(Point) const;
 
-    int get_size() const;
+    const Point& get_coord() const;
+    unsigned get_length() const;
+    bool get_vertical() const;
+    unsigned get_health() const;
+    const std::vector<unsigned>& get_ill() const;
 
-    // проверка на попадание
-    // возвращает 1 если попал
-    bool attack(vector<int>);
-    bool attack(int, int);
+    // проверяем живой ли корабль
+    bool is_alive() const;
 
 private:
-    vector<int> coordinates;
-    vector<int> damage;
-    int size;
-    bool hor; // 1 - вертикален; 0 - горизонтален
+    // местоположение корабля буду задавать как массив
+    // голова + длина
+    // надо уточнять только его ориентацию
+    // вертикаль или горизонталь 
+
+    // координаты корабля (y, x)
+    // по своей сути, голова коробля или 1ая клетка
+    Point coord; 
+    unsigned length; // длина корабля
+    // 1 - вертикаль
+    // 0 - горизонталь
+    bool vertical; // вертикальность
+    // вектор длиной равной длине корабля
+    // 0 - живой   1 - есть попадание
+    unsigned health; // здоровье (числовая величина, ни на что не претендующая)
+    // вектор попаданий в корабль
+    // хранит зачения отступа от головы
+    std::vector<unsigned> ill; 
 };
 
+// класс игрового поля (в размере 1 штука)
+// ну во первых создание игрового пространства
+// отрисовка
+// хранение массива кораблей и взаимодействие с ними
 class Field
 {
-friend ostream& operator<<(ostream&, const Field&);
-
 public:
-    explicit Field(); // поле по умолчанию (10)
-    explicit Field(int); // передаем размер поля
-    // поле квадратное если что
-
-    int get_size() const;
-    const vector<vector<int>>& get_pos() const;
-
-    // так ну х у размер и каскок вертикален
-    void add_ship(int, int, int, bool);
-    void add_ship(Ship);
-    const Ship& get_back() const;
-
-    bool attack(vector<int>) const;
-    bool attack(int, int) const;
+    // значение по умолчанию
+    explicit Field(); 
+    explicit Field(unsigned);
     
-private:
-    int size;
-    vector<vector<int>> coordinates;
-    vector<Ship> ships;
-};
+    // создание поля из данных строки
+    explicit Field(std::string); // нужно для работы с сокетами
 
+    // добавление корабля
+    bool add_ship(unsigned, unsigned, unsigned, bool);
+    // заполняем поле кораблями
+    void filling_ships(); 
+    // на случай если кораблей нужно меньше
+    void filling_ships(unsigned); 
+
+    void add_try(Point);
+
+    // прост перекопирую определение функций из Ship
+
+    unsigned attack(unsigned, unsigned) const;
+    unsigned attack(Point) const;
+
+    // проверка на наличие живых кораблей
+    // 1 если еще есть
+    bool is_alive(); 
+
+    // формат инфы о поле в строку
+    std::string to_text(); // нужно для работы с сокетами
+    // ну в целом в эту строку нужно кинуть только размер поля
+    // то есть одно число, ну нормально
+
+    // получение списка короблей
+    const std::vector<Ship>& get_ships() const; 
+    // получение размера поля
+    unsigned get_n() const; 
+
+private:
+    // ну как бы основное поле
+    // просто хранит корабли по которым будет все время пробегаться
+    std::vector<Ship> ships; // вектор хранения кораблей
+    std::vector<unsigned> templ; // вектор заготовок кораблей, размещаемых на поле
+    unsigned n; // размер поля >3
+    // пусть будет одномерным массивом
+    // потом просто создам какой нить i 
+    // который будет монотонно возрастать на 1
+};
+std::ostream& operator<<(std::ostream&, const Field&);
+
+
+// класс Warship
+// олицетворяющий сам игровой процесс
+// в его обязанности входит 
+// - создание и управление соединением между игроками
+// - создание и управление игровыми полями, заполнение их кораблями
+// - фиксирование выстрелов и попаданий
+//
+// на войне как на войне, а на войне как на войне
 class Warship
 {
 public:
-    Warship();
-    explicit Warship(int);
-    explicit Warship(bool, int);
+    // конструктор класса
+    // устанавливает подключение между игроками
+    // и создает игровое поле
+    // \param host_ ip аддрес либо invite-ссылка
+    // \param port_ используемый порт 
+    // \param n размер поля
+    // \param name_ имя игрока
+    Warship(std::string, unsigned, unsigned, std::string);
+    Warship(std::string, unsigned, unsigned);
+    Warship(std::string, unsigned, std::string);
+    Warship(std::string, unsigned);
 
-    class TooSmallFieldError;
-    class ShipExist;
-    class NetworkError;
+    // функция окончания игры победой
+    // ( не в смысле вызвал - выиграл )
+    bool win();
+    // функция окончания игры поражением
+    // ( не в смысле вызвал - проиграл )
+    bool lose();
 
-    bool sync();
-    
-    // for tests
-    void print_ships(const Ship&) const;
+    // основная игровая сессия
+    bool game();
 
-private:
-    Field& create_field(Field& other);
-    
-    bool online; // будут режимы игры сингл 0 и по сети 1
-    int size; // размер поля
-    // данные выше для обоих игроков должны быть одинаковыми
-    // в смысле когда по сети
-
-    Field good_field; // ну очевидно, свое поле, родное
-    Field bad_field;  // и поле врага, вонючее
-
+protected:
+    sTunnel conn;
+    Field field;
+    std::vector<Point> shots;
 };
 
+// 13 октября 2025 года
+// С днем рождения, Серега

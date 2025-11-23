@@ -2,3 +2,7 @@
 main
 .vscode
 test*
+vgcore*
+*.txt
+!sf_protocol.txt
+zip/
