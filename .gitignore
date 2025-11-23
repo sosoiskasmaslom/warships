@@ -5,4 +5,6 @@ test*
 vgcore*
 *.txt
 !sf_protocol.txt
+!CMakeLists.txt
+build/
 zip/
