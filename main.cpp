@@ -1,17 +1,12 @@
 
 #include <iostream>
-#include "warship.cpp"
+#include "warship.h"
 using namespace std;
 
 int main(int argc, char** argv)
 {
-    Warship game {0, 2};
-    int x, y;
-
-    // while (1)
-    // {
-    //     cout << "Enter coordinates: ";
-    //     cin >> x >> y;
-    // }
-    return 0;
+    unsigned port = (argc-1) ? (unsigned)stoul(argv[1]) : 8080;
+    cout << "Port is " << port << endl;
+    Warship nemat{string("127.0.0.1"), port};
+    nemat.game();
 }
