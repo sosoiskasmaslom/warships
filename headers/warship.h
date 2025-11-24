@@ -32,6 +32,8 @@ public:
     // метод для проверки существует ли корабль в данной точке
     // \param Point
     bool attack(Point) const;
+    // просто сносит n хп
+    void damage(unsigned);
 
     const Point& get_coord() const;
     unsigned get_length() const;
@@ -84,11 +86,26 @@ public:
     // на случай если кораблей нужно меньше
     void filling_ships(unsigned); 
 
-    void add_try(Point);
+    // добавление shot на карту
+    // \param pos координаты shot'а
+    // \param s флаг попадания;
+    // 1 - если попал
+    void add_try(Point, bool);
+    bool check_try(Point);
 
     // прост перекопирую определение функций из Ship
 
+    // \param y 1-ый аргумент, 2-ая координата точки
+    // \param x 2-ой аргумент, 1-ая координата точки
+    //
+    // ( для подробного описания смотри функцию Field::attack(Point) )
     unsigned attack(unsigned, unsigned) const;
+    // в общем функция простая и понятная
+    // даешь ей координаты - она выдает ответ
+    // - если в эту клетку уже был произведен shot - ответ 2
+    // ( кроме случаев попадания по кораблю )
+    // - если есть попадание в корабль - ответ 1
+    // - если промах - ответ 0
     unsigned attack(Point) const;
 
     // проверка на наличие живых кораблей
@@ -104,11 +121,16 @@ public:
     const std::vector<Ship>& get_ships() const; 
     // получение размера поля
     unsigned get_n() const; 
+    Ship& get_ship(Point);
 
 private:
     // ну как бы основное поле
     // просто хранит корабли по которым будет все время пробегаться
     std::vector<Ship> ships; // вектор хранения кораблей
+    // массив состояищий из 2-ух векторов хранения shot'ов
+    // - 1-ый элемент массива содержит удачные shot'ы ( попавшие в корабли ) 
+    // - 2-ой элемент массива содержит все остальные shot'ы
+    std::vector<Point> tries[2];
     std::vector<unsigned> templ; // вектор заготовок кораблей, размещаемых на поле
     unsigned n; // размер поля >3
     // пусть будет одномерным массивом
@@ -116,6 +138,9 @@ private:
     // который будет монотонно возрастать на 1
 };
 std::ostream& operator<<(std::ostream&, const Field&);
+// капец эта функция тяжелой будет
+// ну да ладно, она только для cli версии
+std::ostream& print(std::ostream&, std::vector<Field>);
 
 
 // класс Warship
@@ -153,7 +178,7 @@ public:
 
 protected:
     sTunnel conn;
-    Field field;
+    std::vector<Field> fields {Field(), Field()};
     std::vector<Point> shots;
 };
 

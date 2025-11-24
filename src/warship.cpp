@@ -5,8 +5,7 @@ using namespace std;
 
 Warship::Warship(string host_,
                  unsigned port_, unsigned n,
-                 string name_):
-field(n)
+                 string name_)
 {
     conn.set("127.0.0.1", port_);
 
@@ -14,7 +13,7 @@ field(n)
     { name_ = string("Player") + to_string(conn.get_host()+1); }
     conn.hello(name_);
 
-    field.filling_ships(3);
+    fields[0].filling_ships(3);
     conn.ready();
 }
 
@@ -39,21 +38,42 @@ bool Warship::game()
     conn.start();
 
     Point hehe;
-    for (unsigned x, y, i = conn.get_host(); ; ++i)
+    bool s;
+    for (unsigned heh, x, y, i = conn.get_host(); fields[0].is_alive(); ++i)
     {
-        cout << field << endl;
+        print(cout, fields);
+        for (auto ship: fields[0].get_ships())
+        { cout << ship.get_health() << ' '; }
+        cout << endl << endl;
         if (i%2)
         {
-            cout << "Guess where (x, y): ";
-            cin >> x >> y;
+            for (;;)
+            { 
+                cout << "Guess where (x, y): ";
+                cin >> x >> y; 
+                if 
+                (
+                    !fields[1].check_try(Point(y, x)) && \
+                    x < fields[0].get_n() && y < fields[0].get_n()
+                )
+                { break; }
+                cout << "WRONG" << endl;
+            }
             conn.shot(Point(y, x));
-            i += conn.result();
+            s = conn.result();
+            i += s;
+            fields[1].add_try(Point(conn.get_shot()), s);
         }
         else
         {
             hehe = Point(conn.shot());
-            conn.result(hehe, field.attack(hehe));
-            i += field.attack(hehe);
+            conn.result(hehe, fields[0].attack(hehe));
+            if (fields[0].attack(hehe))
+            {
+                ++i;
+                fields[0].get_ship(hehe).damage(1);
+            }            
         }
     }
+    return 1;
 }
