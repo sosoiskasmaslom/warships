@@ -184,6 +184,7 @@ bool sTunnel::result()
     if (ss[0] != "RESULT")
     { throw runtime_error("sTunnel::result() - its not RESULT"); }
 
+    step = ss[1];
     return sti(ss[2]);
 }
 
