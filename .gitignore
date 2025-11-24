@@ -6,3 +6,4 @@ vgcore*
 *.txt
 !sf_protocol.txt
 zip/
+build/
