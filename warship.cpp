@@ -51,7 +51,11 @@ bool Warship::game()
             { 
                 cout << "Guess where (x, y): ";
                 cin >> x >> y; 
-                if (!fields[1].check_try(Point(y, x)))
+                if 
+                (
+                    !fields[1].check_try(Point(y, x)) && \
+                    x < fields[0].get_n() && y < fields[0].get_n()
+                )
                 { break; }
                 cout << "WRONG" << endl;
             }
