@@ -6,6 +6,7 @@
 #include "jack.h"
 #include "tunnel.h"
 #include "point.h"
+#include "endgame_exception.h"
 
 // unsigned sti(std::string);
 // std::string to_hex(unsigned);

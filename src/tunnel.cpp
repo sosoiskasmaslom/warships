@@ -109,6 +109,9 @@ sTunnel::sTunnel(string host_, unsigned port_):
 Tunnel(host_, port_)
 {}
 
+sTunnel::~sTunnel()
+{ bue(); }
+
 string sTunnel::hello(string name)
 {
     names[0] = name;
@@ -192,4 +195,12 @@ string sTunnel::get_shot() const
 { return step; }
 
 string sTunnel::get_name() const
-{ return names[1]; }
+{ return (*this)[1]; }
+
+string sTunnel::operator[](bool s) const
+{ 
+    if (s)
+    { return names[1]; }
+    else 
+    { return names[0]; }
+}
