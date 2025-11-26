@@ -39,8 +39,11 @@ bool Warship::game()
 
     Point hehe;
     bool s;
-    for (unsigned heh, x, y, i = conn.get_host(); fields[0].is_alive(); ++i)
+    for (unsigned heh, x, y, i = conn.get_host(); ; ++i)
     {
+        if (!fields[0].is_alive())
+        { throw EndGame(conn[1]); }
+        
         print(cout, fields);
         for (auto ship: fields[0].get_ships())
         { cout << ship.get_health() << ' '; }
