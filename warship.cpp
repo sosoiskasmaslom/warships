@@ -40,10 +40,8 @@ bool Warship::game()
     Point hehe;
     bool s;
     for (unsigned heh, x, y, i = conn.get_host(); ; ++i)
-    {
-        if (!fields[0].is_alive())
-        { throw EndGame(conn[1]); }
-        
+    {        
+        cout << conn[0] << " vs " << conn[1] << endl;
         print(cout, fields);
         for (auto ship: fields[0].get_ships())
         { cout << ship.get_health() << ' '; }
@@ -70,12 +68,15 @@ bool Warship::game()
         else
         {
             hehe = Point(conn.shot());
-            conn.result(hehe, fields[0].attack(hehe));
             if (fields[0].attack(hehe))
             {
                 ++i;
                 fields[0].get_ship(hehe).damage(1);
             }            
+            conn.result(hehe, fields[0].attack(hehe), fields[0].is_alive());
+
+            if (!fields[0].is_alive())
+            { throw EndGame(conn[1]); }
         }
     }
     return 1;
