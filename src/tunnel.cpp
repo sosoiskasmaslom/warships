@@ -138,7 +138,7 @@ bool sTunnel::ready()
 }
 
 void sTunnel::bue()
-{ send("BYE"); }
+{ send("BUE"); }
 
 bool sTunnel::restart()
 {
@@ -178,14 +178,21 @@ Point sTunnel::shot()
     return Point(ss[1]);
 }
 
-void sTunnel::result(const Point& pos, unsigned res)
-{ send(string("RESULT ")+pos.to_string()+string(" ")+to_string(res)); }
+void sTunnel::result(const Point& pos, unsigned res, bool s)
+{ send(string("RESULT ")+pos.to_string()+string(" ")+to_string(res)+string(" ")+to_string(s)); }
 
 bool sTunnel::result()
 {
     vector<string> ss = split(recieve(), ' ');
+
+    if (ss[0] == "BUE")
+    { throw EndGame((*this)[0]); }
+
     if (ss[0] != "RESULT")
     { throw runtime_error("sTunnel::result() - its not RESULT"); }
+
+    if (!sti(ss[3]))
+    { throw EndGame((*this)[0]); }
 
     step = ss[1];
     return sti(ss[2]);

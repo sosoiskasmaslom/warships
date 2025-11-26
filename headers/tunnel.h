@@ -5,6 +5,7 @@
 #include <vector>
 #include "jack.h"
 #include "point.h"
+#include "endgame_exception.h"
 
 // создание туннеля между игроками
 // отправка и получение данных о поле
@@ -123,7 +124,7 @@ public:
     // \param unsigned результат: 0 - MISS, 1 - HIT, 2 - DEAD
     //
     // Только отправляет результат, ничего интересного
-    void result(const Point&, unsigned);
+    void result(const Point&, unsigned, bool);
     bool result();
 
 
