@@ -10,10 +10,10 @@ Warship::Warship(string host_,
     conn.set("127.0.0.1", port_);
 
     if (name_ == "")
-    { name_ = string("Player") + to_string(conn.get_host()+1); }
+    { name_ = string("Player") + to_string(2-conn.get_host()); }
     conn.hello(name_);
 
-    fields[0].filling_ships(3);
+    fields[0].filling_ships(1);
     conn.ready();
 }
 
@@ -41,17 +41,21 @@ bool Warship::game()
     bool s;
     for (unsigned heh, x, y, i = conn.get_host(); ; ++i)
     {        
-        cout << conn[0] << " vs " << conn[1] << endl;
+        cout << endl << conn[0] << " vs " << conn[1] << endl << endl;
         print(cout, fields);
+
+        cout << "Health: ";
         for (auto ship: fields[0].get_ships())
         { cout << ship.get_health() << ' '; }
-        cout << endl << endl;
+        cout << endl;
+        
         if (i%2)
         {
             for (;;)
             { 
                 cout << "Guess where (x, y): ";
                 cin >> x >> y; 
+                cout << endl;
                 if 
                 (
                     !fields[1].check_try(Point(y, x)) && \
