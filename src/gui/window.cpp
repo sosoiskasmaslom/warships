@@ -1,5 +1,5 @@
 // window.cpp
-#include "window.h"
+#include "gui/window.h"
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QCloseEvent>
