@@ -17,5 +17,10 @@ int main(int argc, char *argv[]) {
         w.setCellColor(Point(coord.toStdString()), 0);
     });
 
+    QObject::connect(&w, &Window::losePressed, [](){
+        qDebug() << "Player lost!";
+    });
+
+
     return app.exec();
 }

@@ -17,6 +17,8 @@ public:
 
 signals:
     void cellClicked(const QString& coord);
+    void losePressed();
+
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -25,7 +27,7 @@ private:
     QLabel *midLabel;
     QVector<QVector<QPushButton*>> leftButtons;
     QVector<QVector<QPushButton*>> rightButtons;
-
+    QPushButton* loseButton;
 
     void setupUI();
     QFrame* makeFieldFrame();

@@ -25,11 +25,39 @@ void Window::setupUI()
 
     QFrame *mid = new QFrame(this);
     mid->setFrameShape(QFrame::StyledPanel);
-    auto *midLayout = new QHBoxLayout(mid);
+
+    auto *midLayout = new QVBoxLayout(mid);
+    midLayout->setContentsMargins(10,10,10,10);
+    midLayout->setSpacing(0);
+
+    // Верхняя пустота
+    midLayout->addStretch(1);
+
+    // Лейбл
     midLabel = new QLabel("Press a cell", mid);
     midLabel->setAlignment(Qt::AlignCenter);
     midLabel->setWordWrap(true);
-    midLayout->addWidget(midLabel);
+    midLayout->addWidget(midLabel, 0, Qt::AlignHCenter);
+
+    // Нижняя пустота
+    midLayout->addStretch(1);
+
+    // Разделительная линия
+    QFrame *line = new QFrame(mid);
+    line->setFrameShape(QFrame::HLine);
+    line->setFrameShadow(QFrame::Sunken);
+    midLayout->addWidget(line);
+
+    // Кнопка снизу
+    loseButton = new QPushButton("Get Lose", mid);
+    loseButton->setFixedHeight(60);
+    loseButton->setStyleSheet("font-size: 18px; padding: 6px;");
+    midLayout->addSpacing(100);
+    midLayout->addWidget(loseButton);
+
+    connect(loseButton, &QPushButton::clicked, this, [this]() {
+        emit losePressed();
+    });
 
     QFrame *rightFrame = makeFieldFrame();
     populateField(rightFrame, true); 
