@@ -1,18 +1,19 @@
-// window.h
-#pragma once
 
+#pragma once
 #include <QWidget>
 #include <QLabel>
 #include <QPushButton>
 #include <QFrame>
+#include "point.h"
 
 class Window : public QWidget {
     Q_OBJECT
 public:
     explicit Window(QWidget* parent = nullptr);
 
-    // Функция для перекраски клетки в правом поле
-    void setRightCellColor(int row, int col, const QColor& color);
+    // Функция для перекраски клетки в поле
+    void setCellColor(Point coord, bool rightField);
+    void setMiddleText(const std::string& text);
 
 signals:
     void cellClicked(const QString& coord);
@@ -22,8 +23,9 @@ protected:
 
 private:
     QLabel *midLabel;
-    QFrame *rightFrame; // сохраним правый фрейм
-    QVector<QVector<QPushButton*>> rightButtons; // кнопки правого поля
+    QVector<QVector<QPushButton*>> leftButtons;
+    QVector<QVector<QPushButton*>> rightButtons;
+
 
     void setupUI();
     QFrame* makeFieldFrame();

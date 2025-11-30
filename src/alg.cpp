@@ -40,3 +40,12 @@ inline std::vector<std::string> split(std::string line, char spl='\0')
 
     return list;
 }
+
+inline std::vector<std::string> division(std::string line)
+{
+    return std::vector<std::string> 
+    {
+        line.substr(0, line.size()/2),
+        line.substr(line.size()/2, line.size()/2),
+    };
+}

@@ -21,7 +21,7 @@ void Window::setupUI()
     auto *hlay = new QHBoxLayout(this);
 
     QFrame *left = makeFieldFrame();
-    populateField(left, true);
+    populateField(left, false);
 
     QFrame *mid = new QFrame(this);
     mid->setFrameShape(QFrame::StyledPanel);
@@ -31,8 +31,8 @@ void Window::setupUI()
     midLabel->setWordWrap(true);
     midLayout->addWidget(midLabel);
 
-    rightFrame = makeFieldFrame();
-    populateField(rightFrame, false); // правый фрейм некликабельный
+    QFrame *rightFrame = makeFieldFrame();
+    populateField(rightFrame, true); 
 
     hlay->addWidget(left, 1);
     hlay->addWidget(mid, 1);
@@ -63,9 +63,9 @@ void Window::populateField(QFrame* frame, bool clickable)
 
             if (clickable) {
                 connect(btn, &QPushButton::clicked, this, [this, r, c]() {
-                    QString coord = QString("%1%2").arg(r).arg(c);
+                    QString coord = QString("%1%2").arg(c).arg(r);
                     midLabel->setText(coord);
-                    qDebug() << "Clicked:" << coord;
+                    // qDebug() << "Clicked:" << coord;
                     emit cellClicked(coord);
                 });
             } else {
@@ -77,17 +77,33 @@ void Window::populateField(QFrame* frame, bool clickable)
         }
     }
 
-    if (!clickable) {
-        rightButtons = buttons; // сохраняем кнопки правого поля
+    if (clickable) {
+        rightButtons = buttons;   // кликабельное → правое
+    } else {
+        leftButtons = buttons;    // некликабельное → левое
     }
 }
 
-void Window::setRightCellColor(int row, int col, const QColor& color) 
+void Window::setMiddleText(const std::string& text)
 {
-    // row и col от 1 до 10
-    if (row < 1 || row > 10 || col < 1 || col > 10) return;
-    QPushButton *btn = rightButtons[row-1][col-1];
+    if (midLabel)
+        midLabel->setText(QString::fromStdString(text));
+}
+
+void Window::setCellColor(Point coord, bool rightField)
+{
+    if (coord[0] < 0 || coord[0] >= 10 ||
+        coord[1] < 0 || coord[1] >= 10)
+        return;
+
+    QPushButton *btn = nullptr;
+
+    if (rightField)
+        btn = rightButtons[coord[0]][coord[1]];
+    else
+        btn = leftButtons[coord[0]][coord[1]];
+
     if (btn) {
-        btn->setStyleSheet(QString("background:%1; border:1px solid #7aa7d9;").arg(color.name()));
+        btn->setStyleSheet("background:red; border:1px solid #7aa7d9;");
     }
 }

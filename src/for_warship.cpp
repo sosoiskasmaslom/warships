@@ -12,6 +12,7 @@ y(y_), x(x_)
 {}
 
 Point::Point(string ss):
+// Point(sti(division(ss)[1]), sti(division(ss)[0]))
 Point(sti(ss.substr(1, 1)), sti(ss.substr(0, 1)))
 {}
 
