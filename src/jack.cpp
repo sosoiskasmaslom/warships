@@ -110,6 +110,20 @@ std::string jackhost::get_invite() const {
 }
 
 
+std::string get_invite(std::string ip) {
+    in_addr addr{};
+    if (inet_pton(AF_INET, ip.c_str(), &addr) != 1)
+        throw JackAddressError("inet_pton() failed while encoding invite");
+
+    const uint8_t* bytes = reinterpret_cast<const uint8_t*>(&addr);
+    std::ostringstream code;
+    for (int i = 0; i < 4; ++i)
+        code << std::hex << std::setw(2) << std::setfill('0') << (int)bytes[i];
+
+    return code.str();
+}
+
+
 // ------------------------ jack ------------------------
 
 jack::jack(): jackwarp()

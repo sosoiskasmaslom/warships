@@ -7,7 +7,7 @@ Warship::Warship(string host_,
                  unsigned port_, unsigned n,
                  string name_)
 {
-    conn.set("127.0.0.1", port_);
+    conn.set(host_, port_);
 
     if (name_ == "")
     { name_ = string("Player") + to_string(2-conn.get_host()); }
@@ -85,3 +85,6 @@ bool Warship::game()
     }
     return 1;
 }
+
+string Warship::get_invite()
+{ return (conn.get_invite()); }

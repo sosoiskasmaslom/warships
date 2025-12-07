@@ -129,6 +129,8 @@ public:
     std::string get_invite() const;
 };
 
+std::string get_invite(std::string);
+
 
 //======================================================================
 // class jack

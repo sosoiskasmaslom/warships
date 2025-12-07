@@ -14,7 +14,7 @@ Tunnel::Tunnel(string host_, unsigned port_):
 host(0)
 { 
     try 
-    { client.jack_act(host_, port_); } 
+    { client.jack_act(invite_to_ip(host_), port_); } 
     catch(const exception& e)
     { 
         host = 1;
@@ -91,6 +91,12 @@ string Tunnel::get_invite() const
 
 string Tunnel::invite_to_ip(const string& data)
 {
+    for(int i = 0; i<data.size(); ++i)
+    {
+        if (data[i] == '.')
+        { return data; }
+    }
+    
     if (host)
     { return ""; }
     else

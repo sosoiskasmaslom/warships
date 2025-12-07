@@ -177,6 +177,8 @@ public:
     // основная игровая сессия
     bool game();
 
+    std::string get_invite();
+
 protected:
     sTunnel conn;
     std::vector<Field> fields {Field(), Field()};
