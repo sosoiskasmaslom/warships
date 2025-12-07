@@ -237,10 +237,20 @@ ostream& print(ostream& out, vector<Field> fields)
 {
     if (!fields.size())
     { throw runtime_error("print() - fields is empty"); }
+    for (int k = 0; k < fields.size(); ++k)
+    {
+        cout << "  ";
+        for(int i = 0; i < fields[0].get_n(); ++i)
+        { cout << i << ' '; }
+        for(int i = 0; i < 3; ++i)
+        { cout << ' '; }
+    }
+    cout << endl;
     for(int i = 0; i < fields[0].get_n(); ++i)
     {
         for (int k = 0; k < fields.size(); ++k)
         {
+            { cout << i << ' '; }
             for(int j = 0; j < fields[k].get_n(); ++j)
             {
                 switch (fields[k].attack(i, j))
@@ -262,7 +272,6 @@ ostream& print(ostream& out, vector<Field> fields)
             for (int j = 0; j<3; ++j)
             { out << " ";}
         }
-        // { out << ( (other.attack(i, j)) ? "X " : "_ " ); }
         out << endl;
     }
     return out;
