@@ -19,6 +19,7 @@ host(0)
     { 
         host = 1;
         cout << "Its server now" << endl;
+        cout << get_invite() << endl;
         server.jackhost_act(port_); 
         server.wait_jack();
     }
