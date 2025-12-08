@@ -3,6 +3,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <thread>
+// #include <QApplication>
+// #include <QDebug>
+#include "gui/window.h"
 #include "jack.h"
 #include "tunnel.h"
 #include "point.h"
@@ -175,6 +179,7 @@ public:
     bool lose();
 
     // основная игровая сессия
+    bool logic();
     bool game();
 
     std::string get_invite();
@@ -183,6 +188,8 @@ protected:
     sTunnel conn;
     std::vector<Field> fields {Field(), Field()};
     std::vector<Point> shots;
+
+    Window* w;
 };
 
 // 13 октября 2025 года

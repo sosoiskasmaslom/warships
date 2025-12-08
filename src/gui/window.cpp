@@ -65,6 +65,17 @@ void Window::setupUI()
     hlay->addWidget(left, 1);
     hlay->addWidget(mid, 1);
     hlay->addWidget(rightFrame, 1);
+
+    QObject::connect(this, &Window::cellClicked, [this](const QString& coord){
+        qDebug() << "from main:" << coord;
+        setMiddleText(std::string("Player1"));
+        setCellColor(Point(coord.toStdString()), 1);
+        setCellColor(Point(coord.toStdString()), 0);
+    });
+
+    QObject::connect(this, &Window::losePressed, [](){
+        qDebug() << "Player lost!";
+    });
 }
 
 QFrame* Window::makeFieldFrame() 

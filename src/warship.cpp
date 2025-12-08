@@ -33,7 +33,7 @@ Warship::Warship(string host_,
 Warship(host_, port_, 10, "")
 {}
 
-bool Warship::game()
+bool Warship::logic()
 {
     conn.start();
 
@@ -84,6 +84,18 @@ bool Warship::game()
         }
     }
     return 1;
+}
+
+bool Warship::game()
+{
+    w = new Window;
+    w->show();
+
+    std::thread([this]() {
+        this->logic();
+    }).detach();
+
+    return true;
 }
 
 string Warship::get_invite()

@@ -19,6 +19,7 @@ host(0)
     { 
         host = 1;
         cout << "Its server now" << endl;
+        cout << get_invite() << endl;
         server.jackhost_act(port_); 
         server.wait_jack();
     }
@@ -91,12 +92,6 @@ string Tunnel::get_invite() const
 
 string Tunnel::invite_to_ip(const string& data)
 {
-    for(int i = 0; i<data.size(); ++i)
-    {
-        if (data[i] == '.')
-        { return data; }
-    }
-    
     if (host)
     { return ""; }
     else
