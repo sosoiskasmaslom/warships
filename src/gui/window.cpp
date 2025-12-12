@@ -8,6 +8,9 @@
 #include <QDrag>
 #include <QDebug>
 #include <vector>
+#include <QKeyEvent>
+#include <QShowEvent>
+#include <QFont>
 
 Window::Window(QWidget* parent)
     : QWidget(parent)
@@ -42,7 +45,15 @@ void GameWindow::setupUI()
     midLabel = new QLabel("Press a cell", mid);
     midLabel->setAlignment(Qt::AlignCenter);
     midLabel->setWordWrap(true);
+    midLabel->setMinimumHeight(120);
+    midLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
     midLayout->addWidget(midLabel, 0, Qt::AlignHCenter);
+
+    // status label below the middle label
+    statusLabel = new QLabel("", mid);
+    statusLabel->setAlignment(Qt::AlignCenter);
+    statusLabel->setStyleSheet("font-size: 16px; color: #222;");
+    midLayout->addWidget(statusLabel, 0, Qt::AlignHCenter);
 
     midLayout->addStretch(1);
 
@@ -144,6 +155,11 @@ void GameWindow::setRightClickable(bool enabled)
                 rightButtons[r][c]->setEnabled(enabled);
         }
     }
+}
+
+void GameWindow::setStatusText(const QString& text)
+{
+    if (statusLabel) statusLabel->setText(text);
 }
 
 
@@ -592,4 +608,80 @@ WinWindow::WinWindow(QWidget* parent)
 void WinWindow::setMessage(const QString& msg)
 {
     if (label) label->setText(msg);
+}
+
+
+// ---------------- NameInviteWindow ----------------
+NameInviteWindow::NameInviteWindow(QWidget* parent)
+    : Window(parent)
+{
+    setWindowTitle("Enter name and invite");
+    setFixedSize(600, 300);
+
+    auto *layout = new QVBoxLayout(this);
+    layout->setContentsMargins(20, 20, 20, 20);
+
+    promptLabel = new QLabel("Введите имя", this);
+    promptLabel->setAlignment(Qt::AlignCenter);
+    QFont f;
+    f.setPointSize(20);
+    promptLabel->setFont(f);
+    promptLabel->setStyleSheet("color:white;");
+
+    inputLabel = new QLabel("", this);
+    inputLabel->setAlignment(Qt::AlignCenter);
+    QFont fi;
+    fi.setPointSize(28);
+    fi.setBold(true);
+    inputLabel->setFont(fi);
+    inputLabel->setStyleSheet("color:white;");
+
+    layout->addStretch(1);
+    layout->addWidget(promptLabel);
+    layout->addWidget(inputLabel);
+    layout->addStretch(1);
+    setLayout(layout);
+}
+
+void NameInviteWindow::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+    updateLabels();
+}
+
+void NameInviteWindow::updateLabels()
+{
+    if (step == 0) promptLabel->setText("Введите имя");
+    else promptLabel->setText("Введите invite");
+    inputLabel->setText(buffer);
+}
+
+void NameInviteWindow::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Backspace) {
+        if (!buffer.isEmpty()) buffer.chop(1);
+        updateLabels();
+        return;
+    }
+
+    if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
+        if (step == 0) {
+            name = buffer;
+            buffer.clear();
+            step = 1;
+            updateLabels();
+            return;
+        } else {
+            QString invite = buffer;
+            emit finished(name, invite);
+            this->close();
+            return;
+        }
+    }
+
+    QString t = event->text();
+    if (!t.isEmpty() && !t.at(0).isNull()) {
+        buffer += t;
+        updateLabels();
+    }
 }

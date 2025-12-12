@@ -41,6 +41,8 @@ public slots:
     void setCellColor(Point coord, bool rightField);
     // Enable or disable clicking on the right field
     void setRightClickable(bool enabled);
+    // Set the status text under the middle label (e.g. "твой ход" / "подожди-подожди")
+    void setStatusText(const QString& text);
 
 signals:
     // Сигнал при нажатии на клетку (правое поле)
@@ -51,6 +53,7 @@ signals:
 
 private:
     QLabel* midLabel = nullptr;                 // центральный текст
+    QLabel* statusLabel = nullptr;              // дополнительная строка статуса
     QPushButton* loseButton = nullptr;          // кнопка снизу
     QVector<QVector<QPushButton*>> leftButtons; // левое поле
     QVector<QVector<QPushButton*>> rightButtons;// правое поле
@@ -106,39 +109,32 @@ protected:
 private:
     // Создаёт левое и правое окно + раскладывает их
     void createLayout();
-
     // Создаёт левую часть — поле 10×10
     QWidget* makeLeftFieldFrame();
-
     // Создаёт правую часть — кораблики
     QWidget* makeRightShipsFrame();
-
     // Создаёт сетку клеток внутри левого фрейма
     void populateField(QWidget *frame);
-
     // Создаёт модель корабля заданного размера
     void createShipWidget(QWidget *parent, int size, int id);
-
     // Преобразует координаты дропа в индекс клетки
     bool widgetToCell(QWidget* w, int &row, int &col) const;
-
     // Убирает подсветку всех ячеек
     void clearHighlight();
-
     // Подсвечивает возможную позицию корабля при драге
     void highlightPlacement(int row, int col, int size, bool vertical, bool ok);
 
 private:
-    QWidget *leftFrame = nullptr;               // поле слева
-    QWidget *rightFrame = nullptr;              // корабли справа
+    QWidget *leftFrame = nullptr;        
+    QWidget *rightFrame = nullptr;            
 
-    QVector<QVector<QPushButton*>> fieldButtons;// клетки поля 10×10
-    QVector<QLabel*> shipWidgets;               // графические корабли
+    QVector<QVector<QPushButton*>> fieldButtons;
+    QVector<QLabel*> shipWidgets;              
 
-    bool currentVertical = false;               // ориентация корабля
-    int draggingSize = 0;                       // размер корабля в текущем перетаскивании
+    bool currentVertical = false;               
+    int draggingSize = 0;                       
 
-    bool placementConfirmed = false;            // whether auto-confirm was emitted
+    bool placementConfirmed = false;            
 };
 
 class WinWindow : public Window
@@ -146,9 +142,27 @@ class WinWindow : public Window
     Q_OBJECT
 public:
     explicit WinWindow(QWidget* parent = nullptr);
-    // Set displayed message (winner name / text)
     void setMessage(const QString& msg);
-
 private:
     QLabel* label = nullptr;
+};
+
+
+class NameInviteWindow : public Window
+{
+    Q_OBJECT
+public:
+    explicit NameInviteWindow(QWidget* parent = nullptr);
+signals:
+    void finished(const QString& name, const QString& invite);
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
+    void showEvent(QShowEvent *event) override;
+private:
+    QLabel* promptLabel = nullptr;
+    QLabel* inputLabel = nullptr;
+    QString buffer;
+    QString name;
+    int step = 0; // 0 - name, 1 - invite
+    void updateLabels();
 };

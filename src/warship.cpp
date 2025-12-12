@@ -46,9 +46,13 @@ bool Warship::logic()
 
         if (i % 2)
         {
+            QMetaObject::invokeMethod(window, "setStatusText",
+                Qt::QueuedConnection, 
+                Q_ARG(QString, QString::fromUtf8(u8"твой ход")));
+
             QMetaObject::invokeMethod(window, "setRightClickable",
-                                      Qt::QueuedConnection,
-                                      Q_ARG(bool, true));
+                Qt::QueuedConnection,
+                Q_ARG(bool, true));
 
             {
                 std::lock_guard<std::mutex> lk(click_m);
@@ -66,8 +70,8 @@ bool Warship::logic()
             }
 
             QMetaObject::invokeMethod(window, "setRightClickable",
-                                      Qt::QueuedConnection,
-                                      Q_ARG(bool, false));
+                Qt::QueuedConnection,
+                Q_ARG(bool, false));
 
             conn.shot(chosen);
             unsigned s = conn.result();
@@ -78,10 +82,15 @@ bool Warship::logic()
         }
         else
         {
+            QMetaObject::invokeMethod(window, "setStatusText",
+                Qt::QueuedConnection,
+                Q_ARG(QString, QString::fromUtf8(u8"подожди-подожди")));
+
             Point hehe = Point(conn.shot());
             unsigned hit = fields[0].attack(hehe);
 
-            if (hit) {
+            if (hit) 
+            {
                 ++i;
                 fields[0].get_ship(hehe).damage(1);
             }
@@ -90,7 +99,7 @@ bool Warship::logic()
             conn.result(hehe, hit, fields[0].is_alive());
 
             if (!fields[0].is_alive())
-                throw EndGame(conn[1]);
+            { throw EndGame(conn[1]); }
         }
     }
 
