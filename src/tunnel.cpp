@@ -191,7 +191,7 @@ Point sTunnel::shot()
 void sTunnel::result(const Point& pos, unsigned res, bool s)
 { send(string("RESULT ")+pos.to_string()+string(" ")+to_string(res)+string(" ")+to_string(s)); }
 
-bool sTunnel::result()
+unsigned sTunnel::result()
 {
     vector<string> ss = split(srecieve(), ' ');
 

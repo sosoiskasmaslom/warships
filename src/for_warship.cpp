@@ -192,7 +192,7 @@ unsigned Field::attack(Point pos) const
     for (auto ship: ships)
     { 
         if (ship.attack(pos)) 
-        { return 1; }; 
+        { return 1+(ship.get_health()<=1); }; 
     }
     for (unsigned i = 0; i<2; ++i)
     {

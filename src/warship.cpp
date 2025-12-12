@@ -15,7 +15,8 @@ Warship::Warship(string host_,
     { name_ = string("Player") + to_string(2-conn.get_host()); }
     conn.hello(name_);
 
-    fields[0].filling_ships(1);
+    label_line = conn[0] + string(" vs ") + conn[1];
+    filling_ships();
     conn.ready();
 }
 
@@ -69,22 +70,23 @@ bool Warship::logic()
                                       Q_ARG(bool, false));
 
             conn.shot(chosen);
-            bool s = conn.result();
-            i += s;
+            unsigned s = conn.result();
+            i += (s>0);
 
-            fields[1].add_try(Point(conn.get_shot()), s);
+            fields[1].add_try(Point(conn.get_shot()), (s>0));
             emit cellColor(Point(conn.get_shot()), s);
         }
         else
         {
             Point hehe = Point(conn.shot());
-            bool hit = fields[0].attack(hehe);
+            unsigned hit = fields[0].attack(hehe);
 
             if (hit) {
                 ++i;
                 fields[0].get_ship(hehe).damage(1);
             }
 
+            emit an_cellColor(hehe, hit);
             conn.result(hehe, hit, fields[0].is_alive());
 
             if (!fields[0].is_alive())
@@ -98,17 +100,27 @@ bool Warship::logic()
 int Warship::game()
 {
     GameWindow *window = new GameWindow;
-    this->window = window; // expose to logic()
+    this->window = window;
     window->show();
+    window->setMiddleText(label_line);
 
     QEventLoop loop;
     int result = 0;
 
-    // Игрок проиграл
+    for (auto ship: fields[0].get_ships())
+    {
+        for(int i = 0; i<ship.get_length(); ++i)
+        {
+            if (ship.get_vertical()) {
+                window->setCellColor(Point(ship.get_coord()[1]+i, ship.get_coord()[0]), 0, QString("green"));
+            } else {
+                window->setCellColor(Point(ship.get_coord()[1], ship.get_coord()[0]+i), 0, QString("green"));
+            }
+        }
+    }
+
     QObject::connect(window, &GameWindow::losePressed,
-                        &loop, [window, &result, this, &loop]() {
-        // Send BUE to opponent immediately so their side will receive
-        // EndGame and quit. Close our window and signal logic to stop.
+                     &loop, [window, &result, this, &loop]() {
         conn.bue();
         window->close();
         winner = conn[1];
@@ -118,23 +130,24 @@ int Warship::game()
         loop.quit();
     });
 
-    // Connect our cell update signal to the window slot (queued for thread-safety)
-    QObject::connect(this, &Warship::cellColor, [&](Point coord, bool s){
+    QObject::connect(this, &Warship::cellColor, [&](Point coord, unsigned s){
         QString color = (s) ? QString("green") : QString("red");
+        if (s>1) 
+        { color = QString("blue"); }
         window->setCellColor(coord.trans(), 1, color);
     });
 
-    // Forward GUI cell clicks to this object's slot which will notify the
-    // logic thread (via condition_variable).
+    QObject::connect(this, &Warship::an_cellColor, [&](Point coord, bool s){
+        QString color = (s) ? QString("red") : QString("grey");
+        window->setCellColor(coord.trans(), 0, color);
+    });
+
     QObject::connect(window, &GameWindow::cellClicked, this, &Warship::onCellClicked);
 
-    // Закрытие окна → стоп логики
-    QObject::connect(window, &QObject::destroyed,
-                     [&](){
+    QObject::connect(window, &QObject::destroyed, [&](){
         stopRequested = true;
     });
 
-    // ensure right field is disabled initially (until player turn)
     window->setRightClickable(false);
 
     // ────────────── Запуск потока ──────────────
@@ -153,18 +166,38 @@ int Warship::game()
         }
     }).detach();
 
-    loop.exec(); // ждём любой из трёх событий
+    loop.exec();
 
     window->close();
     window->deleteLater();
 
-    // If the worker thread signalled an exception, rethrow it so the
-    // caller (main) can handle it in its try/catch.
     fut.get();
 
-    stopRequested = true; // страховка
+    stopRequested = true;
 
     return result;
+}
+
+void Warship::filling_ships()
+{
+    ship_window = new DragDropWindow;
+    ship_window->show();
+
+    QEventLoop loop;
+    QObject::connect(ship_window, &DragDropWindow::shipsPlaced, &loop, &QEventLoop::quit);
+    QObject::connect(ship_window, &QObject::destroyed, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    if (ship_window) {
+        auto placed = ship_window->getPlacedShips();
+        for (auto &t : placed) {
+            if (t.size() >= 4) {
+                fields[0].add_ship(t[0], t[1], t[2], (t[3] != 0));
+            }
+        }
+            ship_window->deleteLater();
+            ship_window = nullptr;
+    }
 }
 
 string Warship::get_invite()

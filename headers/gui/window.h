@@ -33,6 +33,7 @@ class GameWindow : public Window
 public:
     // Создаёт игровое окно
     explicit GameWindow(QWidget* parent = nullptr);
+    void setMiddleText(const std::string& text);
     
 public slots:
     // Меняет цвет клетки на левом или правом поле (invokable via Qt)
@@ -41,7 +42,6 @@ public slots:
     // Enable or disable clicking on the right field
     void setRightClickable(bool enabled);
 
-public:
 signals:
     // Сигнал при нажатии на клетку (правое поле)
     void cellClicked(const Point& coord);
@@ -63,17 +63,9 @@ private:
 
     // Заполняет рамку сеткой кнопок-клеток
     void populateField(QFrame* frame, bool clickable);
-
-public:
-    // Меняет текст в центральной надписи
-    void setMiddleText(const std::string& text);
-
-    // (moved to slots)
-
 };
 
 
-//
 // ==== DragDropWindow — окно расстановки кораблей ====
 class DragDropWindow : public Window
 {
@@ -82,7 +74,20 @@ public:
     // Создаёт окно с полем слева и кораблями справа
     explicit DragDropWindow(QWidget *parent = nullptr);
 
+signals:
+    // Emitted when the user finishes placing ships and confirms
+    void shipsPlaced();
+
+public:
+    // Returns placed ships as tuples {length, y, x, vertical}
+    std::vector<std::vector<unsigned>> getPlacedShips() const;
+
+public slots:
+    // Validate current placement and enable/disable Done button
+    void validatePlacement();
+
 protected:
+    QVector<int> ships = {4,3,3,2,2,2};
     // Перехватывает события виджетов кораблей (начало драга)
     bool eventFilter(QObject *obj, QEvent *event) override;
 
@@ -132,6 +137,8 @@ private:
 
     bool currentVertical = false;               // ориентация корабля
     int draggingSize = 0;                       // размер корабля в текущем перетаскивании
+
+    QPushButton* doneButton = nullptr;          // confirm placement
 };
 
 class WinWindow : public Window

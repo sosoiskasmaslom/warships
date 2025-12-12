@@ -127,7 +127,7 @@ public:
     //
     // Только отправляет результат, ничего интересного
     void result(const Point&, unsigned, bool);
-    bool result();
+    unsigned result();
 
 
     // получение последнего произведенного выстрела

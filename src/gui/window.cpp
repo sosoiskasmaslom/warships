@@ -7,6 +7,7 @@
 #include <QMimeData>
 #include <QDrag>
 #include <QDebug>
+#include <vector>
 
 Window::Window(QWidget* parent)
     : QWidget(parent)
@@ -58,6 +59,8 @@ void GameWindow::setupUI()
     midLayout->addSpacing(100);
     midLayout->addWidget(loseButton);
 
+    // Done button is used in drag/drop window only; leave here if needed
+
     connect(loseButton, &QPushButton::clicked, this, [this]() {
         emit losePressed();
     });
@@ -95,7 +98,6 @@ void GameWindow::populateField(QFrame* frame, bool clickable)
             if (clickable) {
                 connect(btn, &QPushButton::clicked, this, [this, r, c]() {
                     QString coord = QString("%1%2").arg(r).arg(c);
-                    midLabel->setText(coord);
                     emit cellClicked(Point(coord.toStdString()));
                 });
             } else {
@@ -166,13 +168,21 @@ void DragDropWindow::createLayout()
     leftFrame = makeLeftFieldFrame();
     rightFrame = makeRightShipsFrame();
 
-    // левый фрейм фиксированной ширины (чтобы поле было только слева)
     leftFrame->setFixedWidth(width() / 2 - 20);
     rightFrame->setMinimumWidth(300);
 
     main->addWidget(leftFrame);
     main->addWidget(rightFrame);
     setLayout(main);
+
+    doneButton = new QPushButton("Done", this);
+    doneButton->setFixedHeight(40);
+    doneButton->setEnabled(false);
+    connect(doneButton, &QPushButton::clicked, this, [this]() {
+        emit shipsPlaced();
+        this->close();
+    });
+    if (this->layout()) this->layout()->addWidget(doneButton);
 }
 
 QWidget* DragDropWindow::makeLeftFieldFrame()
@@ -214,8 +224,6 @@ QWidget* DragDropWindow::makeRightShipsFrame()
     QLabel *title = new QLabel("Ships (drag to place). Press R to rotate.", frame);
     vl->addWidget(title);
 
-    // classic ships: 4,3,3,2,2,2,1,1,1,1
-    QVector<int> ships = {4,3,3,2,2,2,1,1,1,1};
     int id = 0;
     for (int s : ships) {
         createShipWidget(frame, s, id++);
@@ -352,6 +360,36 @@ void DragDropWindow::dragMoveEvent(QDragMoveEvent *event)
         QString css = fieldButtons[rr][cc]->styleSheet();
         if (css.contains("#444")) { ok = false; break; } // already occupied
     }
+    // additionally: ships must not touch other ships (no adjacent cells, including diagonals)
+    if (ok) {
+        // collect target cells
+        QVector<QPair<int,int>> targets;
+        for (int i=0;i<size;i++) {
+            int rr = row + (vert ? i : 0);
+            int cc = col + (vert ? 0 : i);
+            targets.append(qMakePair(rr, cc));
+        }
+
+        auto isTarget = [&](int r, int c){
+            for (auto &p : targets) if (p.first==r && p.second==c) return true;
+            return false;
+        };
+
+        for (auto &p : targets) {
+            for (int dr=-1; dr<=1; ++dr) {
+                for (int dc=-1; dc<=1; ++dc) {
+                    int nr = p.first + dr;
+                    int nc = p.second + dc;
+                    if (nr<0||nr>=10||nc<0||nc>=10) continue;
+                    if (isTarget(nr,nc)) continue; // neighbor is part of this ship
+                    QString css = fieldButtons[nr][nc]->styleSheet();
+                    if (css.contains("#444")) { ok = false; break; }
+                }
+                if (!ok) break;
+            }
+            if (!ok) break;
+        }
+    }
 
     highlightPlacement(row, col, size, vert, ok);
     event->acceptProposedAction();
@@ -386,6 +424,27 @@ void DragDropWindow::dropEvent(QDropEvent *event)
         if (css.contains("#444")) return; // overlap
     }
 
+    // adjacency check: ensure no adjacent occupied cells (including diagonals)
+    QVector<QPair<int,int>> targets;
+    for (int i=0;i<size;i++) {
+        int rr = row + (vert ? i : 0);
+        int cc = col + (vert ? 0 : i);
+        targets.append(qMakePair(rr, cc));
+    }
+    auto isTarget = [&](int r, int c){ for (auto &p: targets) if (p.first==r && p.second==c) return true; return false; };
+    for (auto &p : targets) {
+        for (int dr=-1; dr<=1; ++dr) {
+            for (int dc=-1; dc<=1; ++dc) {
+                int nr = p.first + dr;
+                int nc = p.second + dc;
+                if (nr<0||nr>=10||nc<0||nc>=10) continue;
+                if (isTarget(nr,nc)) continue;
+                QString css = fieldButtons[nr][nc]->styleSheet();
+                if (css.contains("#444")) return; // adjacent to existing ship
+            }
+        }
+    }
+
     // place
     for (int i=0;i<size;i++) {
         int rr = row + (vert ? i : 0);
@@ -395,6 +454,95 @@ void DragDropWindow::dropEvent(QDropEvent *event)
 
     clearHighlight();
     event->acceptProposedAction();
+
+    // If the drag source was one of the ship widgets, mark it as placed
+    QObject* src = event->source();
+    QLabel* ship = qobject_cast<QLabel*>(src);
+    if (ship) {
+        ship->setEnabled(false);
+        ship->hide();
+    }
+
+    // After every drop, re-validate the placement and enable/disable Done
+    validatePlacement();
+
+    // After every drop, re-validate the placement and enable/disable Done
+    validatePlacement();
+}
+
+std::vector<std::vector<unsigned>> DragDropWindow::getPlacedShips() const
+{
+    std::vector<std::vector<unsigned>> out;
+    int N = fieldButtons.size();
+    if (N == 0) return out;
+    int M = fieldButtons[0].size();
+    std::vector<std::vector<bool>> seen(N, std::vector<bool>(M, false));
+
+    auto isOccupied = [&](int r, int c)->bool{
+        if (r<0||r>=N||c<0||c>=M) return false;
+        auto btn = fieldButtons[r][c];
+        if (!btn) return false;
+        QString css = btn->styleSheet();
+        return css.contains("#444");
+    };
+
+    for (int r=0;r<N;++r) {
+        for (int c=0;c<M;++c) {
+            if (seen[r][c]) continue;
+            if (!isOccupied(r,c)) continue;
+
+            // determine orientation: check right neighbor
+            bool horiz = isOccupied(r, c+1);
+            bool vert = isOccupied(r+1, c);
+
+            if (horiz && vert) {
+                // ambiguous but treat as single cell (fallback)
+                seen[r][c] = true;
+                out.push_back({1u, (unsigned)r, (unsigned)c, 0u});
+                continue;
+            }
+
+            if (horiz) {
+                int cc = c;
+                while (cc < M && isOccupied(r, cc)) { seen[r][cc] = true; ++cc; }
+                unsigned len = cc - c;
+                out.push_back({len, (unsigned)r, (unsigned)c, 0u});
+            } else if (vert) {
+                int rr = r;
+                while (rr < N && isOccupied(rr, c)) { seen[rr][c] = true; ++rr; }
+                unsigned len = rr - r;
+                out.push_back({len, (unsigned)r, (unsigned)c, 1u});
+            } else {
+                // single cell
+                seen[r][c] = true;
+                out.push_back({1u, (unsigned)r, (unsigned)c, 0u});
+            }
+        }
+    }
+
+    return out;
+}
+
+void DragDropWindow::validatePlacement()
+{
+    if (!doneButton) return;
+
+    auto placed = getPlacedShips();
+
+    int cnt4 = 0, cnt3 = 0, cnt2 = 0;
+    for (auto &t : placed) {
+        if (t.size() < 1) continue;
+        unsigned len = t[0];
+        if (len == 4) ++cnt4;
+        else if (len == 3) ++cnt3;
+        else if (len == 2) ++cnt2;
+        else {
+            // ignore or treat as invalid
+        }
+    }
+
+    bool ok = ((int)placed.size() == ships.size());
+    doneButton->setEnabled(ok);
 }
 
 // helper: given a child widget (maybe the button), find its (row,col) in fieldButtons

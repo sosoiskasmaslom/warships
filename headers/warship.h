@@ -182,11 +182,13 @@ public:
     bool logic();
     int game();
 
+    void filling_ships();
     std::string get_invite();
 
 signals:
     void closeGame(); 
-    void cellColor(Point, bool);
+    void cellColor(Point, unsigned);
+    void an_cellColor(Point, bool);
 
 public slots:
     void onCellClicked(const Point& p);
@@ -204,6 +206,8 @@ protected:
     std::mutex click_m;
     std::condition_variable click_cv;
     std::optional<Point> clicked;
+
+    std::string label_line;
 };
 
 // 13 октября 2025 года
