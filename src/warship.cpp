@@ -29,7 +29,6 @@ Warship::Warship(string host_,
                  string name_):
 Warship(host_, port_, 10, name_)
 {}
-
 Warship::Warship(string host_,
                  unsigned port_):
 Warship(host_, port_, 10, "")
@@ -39,65 +38,67 @@ bool Warship::logic()
 {
     conn.start();
 
-    QObject::connect(this, &Warship::closeGame, [&](){
-        conn.bue();
-    });
-
-    Point hehe;
-    bool s;
     for (unsigned heh, x, y, i = conn.get_host(); ; ++i)
     {
         if (stopRequested)
-        { throw EndGame(winner); }
+            throw EndGame(winner);
 
-        cout << endl << conn[0] << " vs " << conn[1] << endl << endl;
-        print(cout, fields);
-
-        cout << "Health: ";
-        for (auto ship: fields[0].get_ships())
-        { cout << ship.get_health() << ' '; }
-        cout << endl;
-
-        if (i%2)
+        if (i % 2)
         {
-            for (;;)
+            QMetaObject::invokeMethod(window, "setRightClickable",
+                                      Qt::QueuedConnection,
+                                      Q_ARG(bool, true));
+
             {
-                cout << "Guess where (x, y): ";
-                cin >> x >> y;
-                cout << endl;
-                if
-                (
-                    !fields[1].check_try(Point(y, x)) && \
-                    x < fields[0].get_n() && y < fields[0].get_n()
-                )
-                { break; }
-                cout << "WRONG" << endl;
+                std::lock_guard<std::mutex> lk(click_m);
+                clicked.reset();
             }
-            conn.shot(Point(y, x));
-            s = conn.result();
+
+            Point chosen;
+            {
+                std::unique_lock<std::mutex> lk(click_m);
+                click_cv.wait(lk, [this]{ return clicked.has_value() || stopRequested.load(); });
+                if (stopRequested)
+                    throw EndGame(winner);
+                chosen = clicked->trans();
+                clicked.reset();
+            }
+
+            QMetaObject::invokeMethod(window, "setRightClickable",
+                                      Qt::QueuedConnection,
+                                      Q_ARG(bool, false));
+
+            conn.shot(chosen);
+            bool s = conn.result();
             i += s;
+
             fields[1].add_try(Point(conn.get_shot()), s);
+            emit cellColor(Point(conn.get_shot()), s);
         }
         else
         {
-            hehe = Point(conn.shot());
-            if (fields[0].attack(hehe))
-            {
+            Point hehe = Point(conn.shot());
+            bool hit = fields[0].attack(hehe);
+
+            if (hit) {
                 ++i;
                 fields[0].get_ship(hehe).damage(1);
             }
-            conn.result(hehe, fields[0].attack(hehe), fields[0].is_alive());
+
+            conn.result(hehe, hit, fields[0].is_alive());
 
             if (!fields[0].is_alive())
-            { throw EndGame(conn[1]); }
+                throw EndGame(conn[1]);
         }
     }
-    return 1;
+
+    return true;
 }
 
 int Warship::game()
 {
     GameWindow *window = new GameWindow;
+    this->window = window; // expose to logic()
     window->show();
 
     QEventLoop loop;
@@ -105,20 +106,36 @@ int Warship::game()
 
     // Игрок проиграл
     QObject::connect(window, &GameWindow::losePressed,
-                     &loop, [window, &result, this, &loop]() {
-        emit closeGame();
+                        &loop, [window, &result, this, &loop]() {
+        // Send BUE to opponent immediately so their side will receive
+        // EndGame and quit. Close our window and signal logic to stop.
+        conn.bue();
         window->close();
         winner = conn[1];
+
         result = 1;
         stopRequested = true;
         loop.quit();
     });
+
+    // Connect our cell update signal to the window slot (queued for thread-safety)
+    QObject::connect(this, &Warship::cellColor, [&](Point coord, bool s){
+        QString color = (s) ? QString("green") : QString("red");
+        window->setCellColor(coord.trans(), 1, color);
+    });
+
+    // Forward GUI cell clicks to this object's slot which will notify the
+    // logic thread (via condition_variable).
+    QObject::connect(window, &GameWindow::cellClicked, this, &Warship::onCellClicked);
 
     // Закрытие окна → стоп логики
     QObject::connect(window, &QObject::destroyed,
                      [&](){
         stopRequested = true;
     });
+
+    // ensure right field is disabled initially (until player turn)
+    window->setRightClickable(false);
 
     // ────────────── Запуск потока ──────────────
     std::promise<void> prom;
@@ -152,3 +169,10 @@ int Warship::game()
 
 string Warship::get_invite()
 { return (conn.get_invite()); }
+
+void Warship::onCellClicked(const Point& p)
+{
+    std::lock_guard<std::mutex> lk(click_m);
+    clicked = p;
+    click_cv.notify_one();
+}

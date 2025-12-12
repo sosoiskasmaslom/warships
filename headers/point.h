@@ -1,6 +1,7 @@
 
 #pragma once
 #include <iostream>
+#include <QMetaType>
 
 // данный класс вынуждено вынесен в отдельный файл
 // дабы избежать ошибок при компиляции
@@ -16,6 +17,8 @@ public:
     Point(); // конструктор для последующего определения yx
     Point(unsigned, unsigned); // конструктор yx для обычной точки поля
     Point(std::string); // конструктор для преобразования строки в координату
+
+    Point trans();
 
     unsigned get_x() const; // получение х
     unsigned get_y() const; // получение у
@@ -33,3 +36,5 @@ private:
     unsigned x, y; // координата точки 
 };
 std::ostream& operator<<(std::ostream&, const Point&);
+
+Q_DECLARE_METATYPE(Point)

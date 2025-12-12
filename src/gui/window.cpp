@@ -68,14 +68,6 @@ void GameWindow::setupUI()
     hlay->addWidget(left, 1);
     hlay->addWidget(mid, 1);
     hlay->addWidget(rightFrame, 1);
-
-    connect(this, &GameWindow::cellClicked,
-            [this](const QString& coord) {
-                qDebug() << "from main:" << coord;
-                setMiddleText("Player1");
-                setCellColor(Point(coord.toStdString()), 1);
-                setCellColor(Point(coord.toStdString()), 0);
-            });
 }
 
 QFrame* GameWindow::makeFieldFrame()
@@ -104,7 +96,7 @@ void GameWindow::populateField(QFrame* frame, bool clickable)
                 connect(btn, &QPushButton::clicked, this, [this, r, c]() {
                     QString coord = QString("%1%2").arg(r).arg(c);
                     midLabel->setText(coord);
-                    emit cellClicked(coord);
+                    emit cellClicked(Point(coord.toStdString()));
                 });
             } else {
                 btn->setEnabled(false);
@@ -143,6 +135,16 @@ void GameWindow::setCellColor(Point coord, bool rightField, const QString& color
 
 void GameWindow::setCellColor(Point coord, bool rightField)
 { setCellColor(coord, rightField, "red"); }
+
+void GameWindow::setRightClickable(bool enabled)
+{
+    for (int r = 0; r < rightButtons.size(); ++r) {
+        for (int c = 0; c < rightButtons[r].size(); ++c) {
+            if (rightButtons[r][c])
+                rightButtons[r][c]->setEnabled(enabled);
+        }
+    }
+}
 
 
 DragDropWindow::DragDropWindow(QWidget *parent)
@@ -435,4 +437,27 @@ void DragDropWindow::highlightPlacement(int row, int col, int size, bool vertica
             QString("background:%1; border:1px solid black;").arg(rgba)
         );
     }
+}
+
+
+WinWindow::WinWindow(QWidget* parent)
+    : Window(parent)
+{
+    this->setWindowTitle("Victory!");
+
+    auto *layout = new QVBoxLayout(this);
+    layout->setContentsMargins(10, 10, 10, 10);
+
+    label = new QLabel(QString::fromUtf8(u8"хуй вин!!"), this);
+    label->setAlignment(Qt::AlignCenter);
+
+    QFont f = label->font();
+    f.setPointSize(22);
+    f.setBold(true);
+    label->setFont(f);
+
+    layout->addWidget(label);
+
+    this->setLayout(layout);
+    this->setFixedSize(300, 150);
 }

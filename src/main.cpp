@@ -5,9 +5,13 @@
 #include "gui/window.h"
 #include "point.h"
 #include "alg.cpp"
+#include <QMetaType>
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
+
+    // Register Point as a metatype so it can be used in queued signal/slot
+    qRegisterMetaType<Point>("Point");
 
     // Window w;
     // w.show();

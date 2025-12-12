@@ -33,10 +33,18 @@ class GameWindow : public Window
 public:
     // Создаёт игровое окно
     explicit GameWindow(QWidget* parent = nullptr);
+    
+public slots:
+    // Меняет цвет клетки на левом или правом поле (invokable via Qt)
+    void setCellColor(Point coord, bool rightField, const QString& color);
+    void setCellColor(Point coord, bool rightField);
+    // Enable or disable clicking on the right field
+    void setRightClickable(bool enabled);
 
+public:
 signals:
     // Сигнал при нажатии на клетку (правое поле)
-    void cellClicked(const QString& coord);
+    void cellClicked(const Point& coord);
 
     // Сигнал при нажатии кнопки "Lose"
     void losePressed();
@@ -60,9 +68,7 @@ public:
     // Меняет текст в центральной надписи
     void setMiddleText(const std::string& text);
 
-    // Меняет цвет клетки на левом или правом поле
-    void setCellColor(Point coord, bool rightField, const QString& color);
-    void setCellColor(Point coord, bool rightField);
+    // (moved to slots)
 
 };
 
@@ -126,4 +132,14 @@ private:
 
     bool currentVertical = false;               // ориентация корабля
     int draggingSize = 0;                       // размер корабля в текущем перетаскивании
+};
+
+class WinWindow : public Window
+{
+    Q_OBJECT
+public:
+    explicit WinWindow(QWidget* parent = nullptr);
+
+private:
+    QLabel* label = nullptr;
 };

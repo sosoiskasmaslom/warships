@@ -16,6 +16,9 @@ Point::Point(string ss):
 Point(sti(ss.substr(1, 1)), sti(ss.substr(0, 1)))
 {}
 
+Point Point::trans()
+{ return Point(get_x(), get_y()); }
+
 unsigned Point::get_x() const
 { return x; }
 

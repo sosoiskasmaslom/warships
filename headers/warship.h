@@ -13,6 +13,10 @@
 #include "point.h"
 #include "endgame_exception.h"
 
+#include <mutex>
+#include <condition_variable>
+#include <optional>
+
 // unsigned sti(std::string);
 // std::string to_hex(unsigned);
 
@@ -182,6 +186,10 @@ public:
 
 signals:
     void closeGame(); 
+    void cellColor(Point, bool);
+
+public slots:
+    void onCellClicked(const Point& p);
 
 protected:
     sTunnel conn;
@@ -191,6 +199,11 @@ protected:
 
     GameWindow* window;
     DragDropWindow* ship_window;
+
+    // click synchronization
+    std::mutex click_m;
+    std::condition_variable click_cv;
+    std::optional<Point> clicked;
 };
 
 // 13 октября 2025 года
