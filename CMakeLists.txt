@@ -13,7 +13,6 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets Quick)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
-# include_directories(headers)
 file(GLOB SRC_FILES
     src/*.cpp
 )
@@ -23,6 +22,10 @@ qt_add_executable(appwarships
     src/gui/window.cpp
     headers/gui/window.h
     headers/point.h
+
+    # ✔ ДОБАВЛЯЕМ ЭТО
+    headers/warship.h
+
     ${SRC_FILES}
 )
 

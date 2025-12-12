@@ -113,12 +113,21 @@ Tunnel(host_, port_)
 sTunnel::~sTunnel()
 { bue(); }
 
+string sTunnel::srecieve()
+{
+    msg = recieve();
+    if (msg == "BUE")
+    { throw EndGame((*this)[0]); }
+
+    return msg;
+}
+
 string sTunnel::hello(string name)
 {
     names[0] = name;
     if (host)
     { send(name); }
-    names[1] = recieve();
+    names[1] = srecieve();
     if (!host)
     { send(name); }
     return names[1];
@@ -129,9 +138,9 @@ bool sTunnel::ready()
     if (host) 
     { 
         send("READY"); 
-        return (recieve() == "READY");
+        return (srecieve() == "READY");
     } else {
-        if (recieve() == "READY")
+        if (srecieve() == "READY")
         { return send("READY"); }
         else
         { return 0; }
@@ -144,7 +153,7 @@ void sTunnel::bue()
 bool sTunnel::restart()
 {
     send("RESTART");
-    string res = recieve();
+    string res = srecieve();
     if (res != "ACCEPT" && res != "DECLINE")
     { throw runtime_error("sTunnel::restart() - unknown recieve()"); }
 
@@ -162,7 +171,7 @@ bool sTunnel::start()
     if (host)
     { return send("START"); }
     else
-    { return (recieve() == "START"); }
+    { return (srecieve() == "START"); }
 
     throw runtime_error("sTunnel::start() - smth wrong with host");
 }
@@ -172,7 +181,7 @@ void sTunnel::shot(const Point& pos)
 
 Point sTunnel::shot()
 {
-    vector<string> ss = split(recieve(), ' ');
+    vector<string> ss = split(srecieve(), ' ');
     if (ss[0] != "SHOT")
     { throw runtime_error("sTunnel::shot() - its not SHOT"); }
 
@@ -184,10 +193,7 @@ void sTunnel::result(const Point& pos, unsigned res, bool s)
 
 bool sTunnel::result()
 {
-    vector<string> ss = split(recieve(), ' ');
-
-    if (ss[0] == "BUE")
-    { throw EndGame((*this)[0]); }
+    vector<string> ss = split(srecieve(), ' ');
 
     if (ss[0] != "RESULT")
     { throw runtime_error("sTunnel::result() - its not RESULT"); }

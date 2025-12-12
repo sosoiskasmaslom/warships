@@ -48,7 +48,7 @@ Point& Point::operator=(const Point& another)
     return *this;
 }
 
-bool Point::operator==(const Point& another)
+bool Point::operator==(const Point& another) const
 {
     if (get_y() == another.get_y() && get_x() == another.get_x())
     { return 1; }

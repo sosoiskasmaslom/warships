@@ -25,7 +25,7 @@ public:
     unsigned operator[](unsigned) const;
     unsigned& operator[](unsigned);
     Point& operator=(const Point&);
-    bool operator==(const Point&);
+    bool operator==(const Point&) const;
 
     std::string to_string() const;
 

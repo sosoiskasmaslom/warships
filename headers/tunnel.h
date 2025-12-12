@@ -83,6 +83,8 @@ public:
     explicit sTunnel(std::string, unsigned);
     ~sTunnel();
 
+    std::string srecieve();
+
     // Следующие методы могут быть отправлены любой из сторон
 
     // Функция для обмена именами игроков

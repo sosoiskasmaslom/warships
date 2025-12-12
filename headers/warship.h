@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <thread>
+#include <QEventLoop>
 // #include <QApplication>
 // #include <QDebug>
 #include "gui/window.h"
@@ -156,9 +157,11 @@ std::ostream& print(std::ostream&, std::vector<Field>);
 // - фиксирование выстрелов и попаданий
 //
 // на войне как на войне, а на войне как на войне
-class Warship
-{
+class Warship : public QObject
+{ 
+    Q_OBJECT
 public:
+    std::atomic_bool stopRequested = false;
     // конструктор класса
     // устанавливает подключение между игроками
     // и создает игровое поле
@@ -171,25 +174,23 @@ public:
     Warship(std::string, unsigned, std::string);
     Warship(std::string, unsigned);
 
-    // функция окончания игры победой
-    // ( не в смысле вызвал - выиграл )
-    bool win();
-    // функция окончания игры поражением
-    // ( не в смысле вызвал - проиграл )
-    bool lose();
-
     // основная игровая сессия
     bool logic();
-    bool game();
+    int game();
 
     std::string get_invite();
 
+signals:
+    void closeGame(); 
+
 protected:
     sTunnel conn;
+    std::string winner;
     std::vector<Field> fields {Field(), Field()};
     std::vector<Point> shots;
 
-    Window* w;
+    GameWindow* window;
+    DragDropWindow* ship_window;
 };
 
 // 13 октября 2025 года

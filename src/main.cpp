@@ -32,16 +32,19 @@ int main(int argc, char *argv[]) {
     std::getline(std::cin, host_);
     host_ = (host_.empty()) ? "127.0.0.1" : host_;
 
-    unsigned port = 5555;
+    unsigned port = (argc-1) ? (unsigned)std::stoul(argv[1]) : 5555;
     std::cout << "Port is " << port << std::endl;
     Warship nemat{host_, port, name}; 
 
     try
     { nemat.game(); }
-    catch (const EndGame& e) 
+    catch (const EndGame& e)
     { std::cerr << e.what() << " WIN!!" << '\n'; }
 
-    return app.exec();
+    // After the game finishes (normally or via EndGame), exit the
+    // process instead of starting the main Qt event loop which would
+    // keep the program alive indefinitely.
+    return 0;
 }
 
 
