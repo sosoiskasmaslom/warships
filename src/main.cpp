@@ -40,15 +40,26 @@ int main(int argc, char *argv[]) {
     std::cout << "Port is " << port << std::endl;
     Warship nemat{host_, port, name}; 
 
-    try
-    { nemat.game(); }
-    catch (const EndGame& e)
-    { std::cerr << e.what() << " WIN!!" << '\n'; }
+    std::string winnerName;
+    try {
+        nemat.game();
+    }
+    catch (const EndGame& e) {
+        winnerName = e.what();
+    }
 
-    // After the game finishes (normally or via EndGame), exit the
-    // process instead of starting the main Qt event loop which would
-    // keep the program alive indefinitely.
-    return 0;
+    // Show a final window announcing the winner (if any) and run the
+    // Qt event loop so the window is visible until the user closes it.
+    WinWindow *win = new WinWindow;
+    if (!winnerName.empty()) {
+        QString msg = QString::fromStdString(winnerName) + " WIN!!";
+        win->setMessage(msg);
+    } else {
+        win->setMessage("Game finished");
+    }
+    win->show();
+
+    return app.exec();
 }
 
 

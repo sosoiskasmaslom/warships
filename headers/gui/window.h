@@ -87,7 +87,7 @@ public slots:
     void validatePlacement();
 
 protected:
-    QVector<int> ships = {4,3,3,2,2,2};
+    QVector<int> ships = {4,4,3,3,2,2,2,2};
     // Перехватывает события виджетов кораблей (начало драга)
     bool eventFilter(QObject *obj, QEvent *event) override;
 
@@ -138,7 +138,7 @@ private:
     bool currentVertical = false;               // ориентация корабля
     int draggingSize = 0;                       // размер корабля в текущем перетаскивании
 
-    QPushButton* doneButton = nullptr;          // confirm placement
+    bool placementConfirmed = false;            // whether auto-confirm was emitted
 };
 
 class WinWindow : public Window
@@ -146,6 +146,8 @@ class WinWindow : public Window
     Q_OBJECT
 public:
     explicit WinWindow(QWidget* parent = nullptr);
+    // Set displayed message (winner name / text)
+    void setMessage(const QString& msg);
 
 private:
     QLabel* label = nullptr;

@@ -201,6 +201,7 @@ protected:
 
     GameWindow* window;
     DragDropWindow* ship_window;
+    WinWindow* win;
 
     // click synchronization
     std::mutex click_m;

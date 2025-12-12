@@ -17,9 +17,7 @@ Window::Window(QWidget* parent)
 }
 
 void Window::closeEvent(QCloseEvent *event)
-{
-    event->accept();
-}
+{ event->accept(); }
 
 GameWindow::GameWindow(QWidget* parent)
     : Window(parent)
@@ -58,8 +56,6 @@ void GameWindow::setupUI()
     loseButton->setStyleSheet("font-size: 18px; padding: 6px;");
     midLayout->addSpacing(100);
     midLayout->addWidget(loseButton);
-
-    // Done button is used in drag/drop window only; leave here if needed
 
     connect(loseButton, &QPushButton::clicked, this, [this]() {
         emit losePressed();
@@ -116,23 +112,25 @@ void GameWindow::populateField(QFrame* frame, bool clickable)
 void GameWindow::setMiddleText(const std::string& text)
 {
     if (midLabel)
-        midLabel->setText(QString::fromStdString(text));
+    { midLabel->setText(QString::fromStdString(text)); }
 }
 
 void GameWindow::setCellColor(Point coord, bool rightField, const QString& color)
 {
     if (coord[0] < 0 || coord[0] >= 10 ||
         coord[1] < 0 || coord[1] >= 10)
-        return;
+    { return; }
 
     QPushButton* btn = rightField ?
         rightButtons[coord[1]][coord[0]] :
         leftButtons[coord[1]][coord[0]];
 
     if (btn)
+    {
         btn->setStyleSheet(
             QString("background:%1; border:1px solid #7aa7d9;").arg(color)
         );
+    }
 }
 
 void GameWindow::setCellColor(Point coord, bool rightField)
@@ -174,15 +172,6 @@ void DragDropWindow::createLayout()
     main->addWidget(leftFrame);
     main->addWidget(rightFrame);
     setLayout(main);
-
-    doneButton = new QPushButton("Done", this);
-    doneButton->setFixedHeight(40);
-    doneButton->setEnabled(false);
-    connect(doneButton, &QPushButton::clicked, this, [this]() {
-        emit shipsPlaced();
-        this->close();
-    });
-    if (this->layout()) this->layout()->addWidget(doneButton);
 }
 
 QWidget* DragDropWindow::makeLeftFieldFrame()
@@ -225,9 +214,8 @@ QWidget* DragDropWindow::makeRightShipsFrame()
     vl->addWidget(title);
 
     int id = 0;
-    for (int s : ships) {
-        createShipWidget(frame, s, id++);
-    }
+    for (int s : ships) 
+    { createShipWidget(frame, s, id++); }
 
     vl->addStretch(1);
     frame->setLayout(vl);
@@ -244,22 +232,19 @@ void DragDropWindow::createShipWidget(QWidget *parent, int size, int id)
     ship->setObjectName(QString("ship_%1").arg(id));
     ship->setFocusPolicy(Qt::StrongFocus);
 
-    // ship will start drag when clicked -> install eventFilter on this window
     ship->installEventFilter(this);
 
     shipWidgets.push_back(ship);
-    // add to right frame layout (parent has layout)
-    if (parent->layout()) parent->layout()->addWidget(ship);
+    if (parent->layout()) 
+    { parent->layout()->addWidget(ship); }
 }
 
-// Перехват событий корабля: mouse press => старт drag
 bool DragDropWindow::eventFilter(QObject *obj, QEvent *event)
 {
     QLabel *ship = qobject_cast<QLabel*>(obj);
     if (!ship)
-        return QWidget::eventFilter(obj, event);
+    { return QWidget::eventFilter(obj, event); }
 
-    // ----- MOUSE PRESS: start drag -----
     if (event->type() == QEvent::MouseButtonPress)
     {
         QMouseEvent *me = static_cast<QMouseEvent*>(event);
@@ -269,16 +254,16 @@ bool DragDropWindow::eventFilter(QObject *obj, QEvent *event)
         int size = ship->property("shipSize").toInt();
         bool vertical = ship->property("vertical").toBool();
 
-        // --- Rotate ship if needed ---
         if (vertical != currentVertical)
         {
             vertical = currentVertical;
             ship->setProperty("vertical", vertical);
 
-            if (vertical)
+            if (vertical) {
                 ship->setFixedSize(40, size * 40);
-            else
+            } else {
                 ship->setFixedSize(size * 40, 40);
+            }
 
             ship->updateGeometry();
             ship->update();
@@ -286,7 +271,6 @@ bool DragDropWindow::eventFilter(QObject *obj, QEvent *event)
 
         draggingSize = size;
 
-        // ---- Start the drag ----
         QMimeData *mime = new QMimeData();
         mime->setText(QString::number(size));
         mime->setData("application/x-ship-vertical", currentVertical ? "1" : "0");
@@ -307,71 +291,78 @@ bool DragDropWindow::eventFilter(QObject *obj, QEvent *event)
 
 void DragDropWindow::keyPressEvent(QKeyEvent *event)
 {
-    if (event->key() == Qt::Key_R) {
+    if (event->key() == Qt::Key_R) 
+    {
         currentVertical = !currentVertical;
-        // visual feedback: briefly change cursor or title
+
         QString t = currentVertical ? "Vertical" : "Horizontal";
         qDebug() << "Rotation now:" << t;
     }
     QWidget::keyPressEvent(event);
 }
 
-// Drag enter: accept if we have ship text
 void DragDropWindow::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasText())
-        event->acceptProposedAction();
+    { event->acceptProposedAction(); }
 }
 
-// drag move: highlight potential placement on left field
 void DragDropWindow::dragMoveEvent(QDragMoveEvent *event)
 {
-    // only handle when cursor over leftFrame or its children
     QPoint posWindow = event->position().toPoint();
     QWidget *w = childAt(posWindow);
-    if (!w) {
+    if (!w) 
+    {
         clearHighlight();
         return;
     }
 
-    // find which cell (row,col)
     int row=-1, col=-1;
-    if (!widgetToCell(w, row, col)) {
+    if (!widgetToCell(w, row, col)) 
+    {
         clearHighlight();
         return;
     }
 
-    // read mime
     int size = 0;
     bool vert = currentVertical;
     if (event->mimeData()->hasText())
-        size = event->mimeData()->text().toInt();
-    if (event->mimeData()->hasFormat("application/x-ship-vertical")) {
+    { size = event->mimeData()->text().toInt(); }
+    if (event->mimeData()->hasFormat("application/x-ship-vertical")) 
+    {
         QByteArray b = event->mimeData()->data("application/x-ship-vertical");
         if (!b.isEmpty()) vert = (b[0] == '1');
     }
 
-    // check fit
     bool ok = true;
-    for (int i=0;i<size;i++) {
+    for (int i = 0; i < size; i++) 
+    {
         int rr = row + (vert ? i : 0);
         int cc = col + (vert ? 0 : i);
-        if (rr<0||rr>=10||cc<0||cc>=10) { ok = false; break; }
+        if (rr<0||rr>=10||cc<0||cc>=10) 
+        { ok = false; break; }
+
         QString css = fieldButtons[rr][cc]->styleSheet();
-        if (css.contains("#444")) { ok = false; break; } // already occupied
+        if (css.contains("#444")) 
+        { ok = false; break; }
     }
-    // additionally: ships must not touch other ships (no adjacent cells, including diagonals)
-    if (ok) {
-        // collect target cells
+    if (ok) 
+    {
         QVector<QPair<int,int>> targets;
-        for (int i=0;i<size;i++) {
+        for (int i = 0; i < size; i++) 
+        {
             int rr = row + (vert ? i : 0);
             int cc = col + (vert ? 0 : i);
             targets.append(qMakePair(rr, cc));
         }
 
-        auto isTarget = [&](int r, int c){
-            for (auto &p : targets) if (p.first==r && p.second==c) return true;
+        auto isTarget = [&](int r, int c)
+        {
+            for (auto &p : targets) 
+            { 
+                if (p.first==r && p.second==c) 
+                { return true; } 
+            }
             return false;
         };
 
@@ -395,7 +386,6 @@ void DragDropWindow::dragMoveEvent(QDragMoveEvent *event)
     event->acceptProposedAction();
 }
 
-// drop: place ship
 void DragDropWindow::dropEvent(QDropEvent *event)
 {
     QPoint posWindow = event->position().toPoint();
@@ -414,17 +404,15 @@ void DragDropWindow::dropEvent(QDropEvent *event)
         if (!b.isEmpty()) vert = (b[0] == '1');
     }
 
-    // verify
     if (size <= 0) return;
     for (int i=0;i<size;i++) {
         int rr = row + (vert ? i : 0);
         int cc = col + (vert ? 0 : i);
-        if (rr<0||rr>=10||cc<0||cc>=10) return; // out of bounds
+        if (rr<0||rr>=10||cc<0||cc>=10) return;
         QString css = fieldButtons[rr][cc]->styleSheet();
-        if (css.contains("#444")) return; // overlap
+        if (css.contains("#444")) return;
     }
 
-    // adjacency check: ensure no adjacent occupied cells (including diagonals)
     QVector<QPair<int,int>> targets;
     for (int i=0;i<size;i++) {
         int rr = row + (vert ? i : 0);
@@ -440,12 +428,11 @@ void DragDropWindow::dropEvent(QDropEvent *event)
                 if (nr<0||nr>=10||nc<0||nc>=10) continue;
                 if (isTarget(nr,nc)) continue;
                 QString css = fieldButtons[nr][nc]->styleSheet();
-                if (css.contains("#444")) return; // adjacent to existing ship
+                if (css.contains("#444")) return;
             }
         }
     }
 
-    // place
     for (int i=0;i<size;i++) {
         int rr = row + (vert ? i : 0);
         int cc = col + (vert ? 0 : i);
@@ -455,7 +442,6 @@ void DragDropWindow::dropEvent(QDropEvent *event)
     clearHighlight();
     event->acceptProposedAction();
 
-    // If the drag source was one of the ship widgets, mark it as placed
     QObject* src = event->source();
     QLabel* ship = qobject_cast<QLabel*>(src);
     if (ship) {
@@ -463,10 +449,7 @@ void DragDropWindow::dropEvent(QDropEvent *event)
         ship->hide();
     }
 
-    // After every drop, re-validate the placement and enable/disable Done
     validatePlacement();
-
-    // After every drop, re-validate the placement and enable/disable Done
     validatePlacement();
 }
 
@@ -491,12 +474,10 @@ std::vector<std::vector<unsigned>> DragDropWindow::getPlacedShips() const
             if (seen[r][c]) continue;
             if (!isOccupied(r,c)) continue;
 
-            // determine orientation: check right neighbor
             bool horiz = isOccupied(r, c+1);
             bool vert = isOccupied(r+1, c);
 
             if (horiz && vert) {
-                // ambiguous but treat as single cell (fallback)
                 seen[r][c] = true;
                 out.push_back({1u, (unsigned)r, (unsigned)c, 0u});
                 continue;
@@ -513,7 +494,6 @@ std::vector<std::vector<unsigned>> DragDropWindow::getPlacedShips() const
                 unsigned len = rr - r;
                 out.push_back({len, (unsigned)r, (unsigned)c, 1u});
             } else {
-                // single cell
                 seen[r][c] = true;
                 out.push_back({1u, (unsigned)r, (unsigned)c, 0u});
             }
@@ -525,8 +505,6 @@ std::vector<std::vector<unsigned>> DragDropWindow::getPlacedShips() const
 
 void DragDropWindow::validatePlacement()
 {
-    if (!doneButton) return;
-
     auto placed = getPlacedShips();
 
     int cnt4 = 0, cnt3 = 0, cnt2 = 0;
@@ -536,16 +514,19 @@ void DragDropWindow::validatePlacement()
         if (len == 4) ++cnt4;
         else if (len == 3) ++cnt3;
         else if (len == 2) ++cnt2;
-        else {
-            // ignore or treat as invalid
-        }
+        else { }
     }
 
-    bool ok = ((int)placed.size() == ships.size());
-    doneButton->setEnabled(ok);
+    bool ok = ((int)placed.size() == (int)ships.size());
+
+    if (ok && !placementConfirmed) {
+        placementConfirmed = true;
+        emit shipsPlaced();
+        this->close();
+    }
+    if (!ok) placementConfirmed = false;
 }
 
-// helper: given a child widget (maybe the button), find its (row,col) in fieldButtons
 bool DragDropWindow::widgetToCell(QWidget *w, int &row, int &col) const
 {
     for (int r=0;r<fieldButtons.size();++r) {
@@ -563,7 +544,6 @@ void DragDropWindow::clearHighlight()
     for (int r=0;r<fieldButtons.size();++r)
         for (int c=0;c<fieldButtons[r].size();++c) {
             QString css = fieldButtons[r][c]->styleSheet();
-            // do not override already placed ships (#444)
             if (!css.contains("#444"))
                 fieldButtons[r][c]->setStyleSheet("background:#cfe8ff; border:1px solid #7aa7d9;");
         }
@@ -579,7 +559,6 @@ void DragDropWindow::highlightPlacement(int row, int col, int size, bool vertica
         int rr = row + (vertical ? i : 0);
         int cc = col + (vertical ? 0 : i);
         if (rr<0||rr>=10||cc<0||cc>=10) continue;
-        // don't override placed ships
         if (fieldButtons[rr][cc]->styleSheet().contains("#444")) continue;
         fieldButtons[rr][cc]->setStyleSheet(
             QString("background:%1; border:1px solid black;").arg(rgba)
@@ -596,7 +575,7 @@ WinWindow::WinWindow(QWidget* parent)
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(10, 10, 10, 10);
 
-    label = new QLabel(QString::fromUtf8(u8"хуй вин!!"), this);
+    label = new QLabel(QString::fromUtf8(u8"WIN"), this);
     label->setAlignment(Qt::AlignCenter);
 
     QFont f = label->font();
@@ -608,4 +587,9 @@ WinWindow::WinWindow(QWidget* parent)
 
     this->setLayout(layout);
     this->setFixedSize(300, 150);
+}
+
+void WinWindow::setMessage(const QString& msg)
+{
+    if (label) label->setText(msg);
 }
