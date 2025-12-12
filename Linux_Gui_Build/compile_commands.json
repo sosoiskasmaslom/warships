@@ -1,0 +1,50 @@
+[
+{
+  "directory": "/home/cuc/warships/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/cuc/warships/build/appwarships_autogen/include -I/home/cuc/warships/headers -I/home/cuc/warships/src -isystem /usr/include/qt6/QtCore -isystem /usr/include/qt6 -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6/QtGui -g -std=gnu++20 -mno-direct-extern-access -o CMakeFiles/appwarships.dir/appwarships_autogen/mocs_compilation.cpp.o -c /home/cuc/warships/build/appwarships_autogen/mocs_compilation.cpp",
+  "file": "/home/cuc/warships/build/appwarships_autogen/mocs_compilation.cpp",
+  "output": "/home/cuc/warships/build/CMakeFiles/appwarships.dir/appwarships_autogen/mocs_compilation.cpp.o"
+},
+{
+  "directory": "/home/cuc/warships/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/cuc/warships/build/appwarships_autogen/include -I/home/cuc/warships/headers -I/home/cuc/warships/src -isystem /usr/include/qt6/QtCore -isystem /usr/include/qt6 -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6/QtGui -g -std=gnu++20 -mno-direct-extern-access -o CMakeFiles/appwarships.dir/src/main.cpp.o -c /home/cuc/warships/src/main.cpp",
+  "file": "/home/cuc/warships/src/main.cpp",
+  "output": "/home/cuc/warships/build/CMakeFiles/appwarships.dir/src/main.cpp.o"
+},
+{
+  "directory": "/home/cuc/warships/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/cuc/warships/build/appwarships_autogen/include -I/home/cuc/warships/headers -I/home/cuc/warships/src -isystem /usr/include/qt6/QtCore -isystem /usr/include/qt6 -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6/QtGui -g -std=gnu++20 -mno-direct-extern-access -o CMakeFiles/appwarships.dir/src/gui/window.cpp.o -c /home/cuc/warships/src/gui/window.cpp",
+  "file": "/home/cuc/warships/src/gui/window.cpp",
+  "output": "/home/cuc/warships/build/CMakeFiles/appwarships.dir/src/gui/window.cpp.o"
+},
+{
+  "directory": "/home/cuc/warships/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/cuc/warships/build/appwarships_autogen/include -I/home/cuc/warships/headers -I/home/cuc/warships/src -isystem /usr/include/qt6/QtCore -isystem /usr/include/qt6 -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6/QtGui -g -std=gnu++20 -mno-direct-extern-access -o CMakeFiles/appwarships.dir/src/alg.cpp.o -c /home/cuc/warships/src/alg.cpp",
+  "file": "/home/cuc/warships/src/alg.cpp",
+  "output": "/home/cuc/warships/build/CMakeFiles/appwarships.dir/src/alg.cpp.o"
+},
+{
+  "directory": "/home/cuc/warships/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/cuc/warships/build/appwarships_autogen/include -I/home/cuc/warships/headers -I/home/cuc/warships/src -isystem /usr/include/qt6/QtCore -isystem /usr/include/qt6 -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6/QtGui -g -std=gnu++20 -mno-direct-extern-access -o CMakeFiles/appwarships.dir/src/for_warship.cpp.o -c /home/cuc/warships/src/for_warship.cpp",
+  "file": "/home/cuc/warships/src/for_warship.cpp",
+  "output": "/home/cuc/warships/build/CMakeFiles/appwarships.dir/src/for_warship.cpp.o"
+},
+{
+  "directory": "/home/cuc/warships/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/cuc/warships/build/appwarships_autogen/include -I/home/cuc/warships/headers -I/home/cuc/warships/src -isystem /usr/include/qt6/QtCore -isystem /usr/include/qt6 -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6/QtGui -g -std=gnu++20 -mno-direct-extern-access -o CMakeFiles/appwarships.dir/src/jack.cpp.o -c /home/cuc/warships/src/jack.cpp",
+  "file": "/home/cuc/warships/src/jack.cpp",
+  "output": "/home/cuc/warships/build/CMakeFiles/appwarships.dir/src/jack.cpp.o"
+},
+{
+  "directory": "/home/cuc/warships/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/cuc/warships/build/appwarships_autogen/include -I/home/cuc/warships/headers -I/home/cuc/warships/src -isystem /usr/include/qt6/QtCore -isystem /usr/include/qt6 -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6/QtGui -g -std=gnu++20 -mno-direct-extern-access -o CMakeFiles/appwarships.dir/src/tunnel.cpp.o -c /home/cuc/warships/src/tunnel.cpp",
+  "file": "/home/cuc/warships/src/tunnel.cpp",
+  "output": "/home/cuc/warships/build/CMakeFiles/appwarships.dir/src/tunnel.cpp.o"
+},
+{
+  "directory": "/home/cuc/warships/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/cuc/warships/build/appwarships_autogen/include -I/home/cuc/warships/headers -I/home/cuc/warships/src -isystem /usr/include/qt6/QtCore -isystem /usr/include/qt6 -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6/QtGui -g -std=gnu++20 -mno-direct-extern-access -o CMakeFiles/appwarships.dir/src/warship.cpp.o -c /home/cuc/warships/src/warship.cpp",
+  "file": "/home/cuc/warships/src/warship.cpp",
+  "output": "/home/cuc/warships/build/CMakeFiles/appwarships.dir/src/warship.cpp.o"
+}
+]

@@ -1,0 +1,2 @@
+set(__QT_DEPLOY_TARGET_appwarships_FILE /home/cuc/warships/build/appwarships)
+set(__QT_DEPLOY_TARGET_appwarships_TYPE EXECUTABLE)

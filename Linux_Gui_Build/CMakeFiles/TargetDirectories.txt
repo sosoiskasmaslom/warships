@@ -1,0 +1,5 @@
+/home/cuc/warships/build/CMakeFiles/appwarships.dir
+/home/cuc/warships/build/CMakeFiles/edit_cache.dir
+/home/cuc/warships/build/CMakeFiles/rebuild_cache.dir
+/home/cuc/warships/build/CMakeFiles/appwarships_autogen_timestamp_deps.dir
+/home/cuc/warships/build/CMakeFiles/appwarships_autogen.dir
